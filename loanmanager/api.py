@@ -351,7 +351,7 @@ class UnpaidLoanByThreadView(APIView):
             loan_obj = loan_obj[0]
 
             loan_obj.is_unpaid = True
-            loan_obj.borrower.has_an_unpaid_loan = True
+            loan_obj.borrower.has_unpaid_loan = True
             loan_obj.save()
             return Response({'message': f'''That's unfortunate! \n\n u/{loan_obj.lender.username} has confirmed that they have not received a repayment for the [loan]({loan_obj}) from 
                             u/{loan_obj.borrower.username} and the loan is thus marked as unpaid. \n\n The mods will be notified automatically! (Loan ID `{loan_obj.loan_id}`: `Unpaid`)'''}, status=status.HTTP_200_OK)
@@ -381,8 +381,11 @@ class UnpaidLoanWithIDView(APIView):
             if loan_obj.is_unpaid:
                 return Response({'message': f'''This loan has already been marked as unpaid!'''}, status=status.HTTP_400_BAD_REQUEST)
             loan_obj.is_unpaid = True
-            loan_obj.borrower.has_an_unpaid_loan = True
             loan_obj.save()
+
+            borrower_obj = loan_obj.borrower
+            borrower_obj.has_unpaid_loan = True
+            borrower_obj.save()
 
             if loan_obj.lender.username == author_obj.username:
                 return Response({'message': f'''That's unfortunate! \n\n u/{loan_obj.lender.username} has confirmed that they have not received a repayment for the [loan]({loan_obj}) from 
@@ -493,7 +496,7 @@ class CheckUserLoansView(APIView):
             unpaid_loan_message = ""
 
             if user_obj.has_unpaid_loan:
-                unpaid_loan_message = "\n\n**WARNING**: /u/{} has an unpaid loan!".format(user_obj.username)
+                unpaid_loan_message = "\n\n**WARNING: /u/{} has an unpaid loan!**\n\n".format(user_obj.username)
 
             return Response({'message':
 f'''Here are the requested details of the user u/{user_obj.username}. \n\n
@@ -577,7 +580,6 @@ class CancelLoanWithIDView(APIView):
             if loan_obj.is_cancelled:
                 return Response({'message': f'''This loan has already been cancelled!'''}, status=status.HTTP_400_BAD_REQUEST)
             
-            loan_obj = loan_obj[0]
             loan_obj.is_cancelled = True
             loan_obj.save()
 
@@ -595,14 +597,14 @@ class CancelLoanWithIDView(APIView):
             
             if loan_obj.lender.username == author_obj.username:
                 return Response({'message': 
-f'''I have noted that down! \n\n u/{loan_obj.borrower.username} has cancelled their loan of {loan_obj.amount} {loan_obj.currency} from 
-u/{loan_obj.lender.username} and the loan is thus marked as cancelled. (Loan ID `{loan_obj.loan_id}`: `Cancelled`) \n\n
+f'''I have noted that down! \n\n u/{loan_obj.lender.username} has cancelled their loan of {loan_obj.amount} {loan_obj.currency} with 
+u/{loan_obj.borrower.username} and the loan is thus marked as cancelled. (Loan ID `{loan_obj.loan_id}`: `Cancelled`) \n\n
 **Note**: No further actions will work on this loan (this loan cannot be marked as paid/unpaid/confirmed). If this loan is reinstated, please use the `$loan` command again.
 '''}, status=status.HTTP_200_OK)
             elif author_obj.is_mod:
                 return Response({'message':
-f'''**Moderator Command** \n\n I have noted that down! \n\n The moderator u/{author_obj.username} has cancelled the loan from the lender u/{loan_obj.lender.username} of {loan_obj.amount} {loan_obj.currency} from
-u/{loan_obj.borrower.username} and the loan is thus marked as cancelled. (Loan ID `{loan_obj.loan_id}`: `Cancelled`) \n\n
+f'''**Moderator Command** \n\n I have noted that down! \n\n The moderator u/{author_obj.username} has cancelled the loan between the lender u/{loan_obj.lender.username} and the borrower
+u/{loan_obj.borrower.username} for the amount of {loan_obj.amount} {loan_obj.currency} and the loan is thus marked as cancelled. (Loan ID `{loan_obj.loan_id}`: `Cancelled`) \n\n
 **Note**: No further actions will work on this loan (this loan cannot be marked as paid/unpaid/confirmed). If this loan is reinstated, please use the `$loan` command again.
 '''}, status=status.HTTP_200_OK)
         except Loan.DoesNotExist:
