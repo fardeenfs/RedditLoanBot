@@ -490,6 +490,8 @@ class CheckUserLoansView(APIView):
 
             markdown_table = generate_markdown_table(reduce_to_latest_5_loans(records=records))
             
+            unpaid_loan_message = ""
+
             if user_obj.has_unpaid_loan:
                 unpaid_loan_message = "\n\n**WARNING**: /u/{} has an unpaid loan!".format(user_obj.username)
 
