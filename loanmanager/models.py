@@ -11,6 +11,7 @@ class CommentsRepliedTo(models.Model):
 
 class RedditUser(models.Model):
     username = models.CharField(max_length=100, unique=True)
+
     borrower_pending_loan_balance = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     borrower_completed_loan_balance = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     borrower_pending_loan_count = models.IntegerField(default=0)
@@ -22,7 +23,12 @@ class RedditUser(models.Model):
     lender_pending_loan_count = models.IntegerField(default=0)
     lender_completed_loan_count = models.IntegerField(default=0)
 
+    is_mod = models.BooleanField(default=False)
 
+    is_active = models.BooleanField(default=True)
+    has_unpaid_loan = models.BooleanField(default=False)
+    is_banned = models.BooleanField(default=False)
+    ban_reason = models.CharField(max_length=1000, blank=True, null=True)
 
     def __str__(self):
         return f"{self.username}"

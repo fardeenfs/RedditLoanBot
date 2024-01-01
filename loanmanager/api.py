@@ -158,7 +158,8 @@ class ConfirmLoanWithIDView(APIView):
         try:
             loan_obj = Loan.objects.get(loan_id=self.request.data['loan_id'], is_cancelled=False)
             author = self.request.data['author']
-            if loan_obj.borrower.username != author:
+            author_obj, _ = RedditUser.objects.get_or_create(username=author)
+            if loan_obj.borrower.username != author_obj.username and not author_obj.is_mod:
                 return Response({'message': f'''You are not the borrower of this loan. You cannot 'confirm' this loan. If this is an error, please contact 
                                 a moderator.'''}, status=status.HTTP_200_OK) 
             if loan_obj.is_confirmed:
@@ -166,9 +167,12 @@ class ConfirmLoanWithIDView(APIView):
             
             loan_obj.is_confirmed = True
             loan_obj.save()
-            return Response({'message': f'''I have noted that down! \n\n u/{loan_obj.borrower.username} has confirmed that they have received {loan_obj.amount} {loan_obj.currency} from 
+            if loan_obj.lender.username == author_obj.username:
+                return Response({'message': f'''I have noted that down! \n\n u/{loan_obj.borrower.username} has confirmed that they have received {loan_obj.amount} {loan_obj.currency} from 
                             u/{loan_obj.lender.username} and the loan is thus marked as confirmed. (Loan ID `{loan_obj.loan_id}`: `Confirmed`)'''}, status=status.HTTP_200_OK)
-        
+            elif author_obj.is_mod:
+                return Response({'message': f'''**Moderator Command** \n\n I have noted that down! \n\n The moderator u/{author_obj.username} has confirmed that u/{loan_obj.borrower.username} has received {loan_obj.amount} {loan_obj.currency} from 
+                            u/{loan_obj.lender.username} and the loan is thus marked as confirmed. (Loan ID `{loan_obj.loan_id}`: `Confirmed`)'''}, status=status.HTTP_200_OK)
         except Loan.DoesNotExist:
             return Response({'message': f'''No active loan found! Please ensure that the lender has used the `$loan` command and the comment has been responded
                               to by the bot.\n\n If the loan was cancelled/refunded previously, request the lender to use the `$loan` command again'''}, status=status.HTTP_200_OK)
@@ -264,7 +268,8 @@ class PayLoanWithIDView(APIView):
             author = self.request.data['author']
             amount = self.request.data['amount']
             currency = self.request.data['currency']
-            if loan_obj.lender.username != author:
+            author_obj, _ = RedditUser.objects.get_or_create(username=author)
+            if loan_obj.lender.username != author_obj.username and not author_obj.is_mod:
                 return Response({'message': f'''You are not the lender of this loan. You cannot mark this loan as paid. If this is an error, please contact 
                                 a moderator.\n\n The lender of the loan is currently u/{loan_obj.lender.username}'''}, status=status.HTTP_200_OK)   
             if loan_obj.is_paid:
@@ -314,9 +319,13 @@ class PayLoanWithIDView(APIView):
             borrower_obj.borrower_repayment_total += amount_in_usd
             borrower_obj.save()
 
-            return Response({'message': f'''That's sweet! I will note that down. \n\n u/{loan_obj.lender.username} has confirmed that they have received {amount} {currency} 
+            if loan_obj.lender.username == author_obj.username:
+                return Response({'message': f'''That's sweet! I will note that down. \n\n u/{loan_obj.lender.username} has confirmed that they have received {amount} {currency} 
                             from u/{loan_obj.borrower.username} and the loan is thus marked as paid. (Loan ID `{loan_obj.loan_id}`: `Paid`)'''}, status=status.HTTP_200_OK)
-        
+            elif author_obj.is_mod:
+                return Response({'message': f'''**Moderator Command** \n\n That's sweet! I will note that down. \n\n The moderator u/{author_obj.username} has confirmed that u/{loan_obj.lender.username} has received {amount} {currency} 
+                            from u/{loan_obj.borrower.username} and the loan is thus marked as paid. (Loan ID `{loan_obj.loan_id}`: `Paid`)'''}, status=status.HTTP_200_OK)
+    
         except Loan.DoesNotExist:
             return Response({'message': f'''No active loan found! Please ensure that the `$loan` command was used and the comment has been responded
                               to by the bot.\n\n If the loan was cancelled/refunded previously, request the lender to use the `$loan` command again'''}, status=status.HTTP_200_OK)
@@ -342,6 +351,7 @@ class UnpaidLoanByThreadView(APIView):
             loan_obj = loan_obj[0]
 
             loan_obj.is_unpaid = True
+            loan_obj.borrower.has_an_unpaid_loan = True
             loan_obj.save()
             return Response({'message': f'''That's unfortunate! \n\n u/{loan_obj.lender.username} has confirmed that they have not received a repayment for the [loan]({loan_obj}) from 
                             u/{loan_obj.borrower.username} and the loan is thus marked as unpaid. \n\n The mods will be notified automatically! (Loan ID `{loan_obj.loan_id}`: `Unpaid`)'''}, status=status.HTTP_200_OK)
@@ -364,16 +374,22 @@ class UnpaidLoanWithIDView(APIView):
             print(self.request.data)
             loan_obj = Loan.objects.get(loan_id=self.request.data['loan_id'], is_cancelled=False)
             author = self.request.data['author']
-            if loan_obj.lender.username != author:
+            author_obj, _ = RedditUser.objects.get_or_create(username=author)
+            if loan_obj.lender.username != author_obj.username and not author_obj.is_mod:
                 return Response({'message': f'''You are not the lender of this loan. You cannot mark this loan as unpaid. If this is an error, please contact 
                                 a moderator.\n\n The lender of the loan is currently u/{loan_obj.lender.username}'''}, status=status.HTTP_200_OK)   
             if loan_obj.is_unpaid:
                 return Response({'message': f'''This loan has already been marked as unpaid!'''}, status=status.HTTP_400_BAD_REQUEST)
             loan_obj.is_unpaid = True
+            loan_obj.borrower.has_an_unpaid_loan = True
             loan_obj.save()
 
-            return Response({'message': f'''That's unfortunate! \n\n u/{loan_obj.lender.username} has confirmed that they have not received a repayment for the [loan]({loan_obj}) from 
+            if loan_obj.lender.username == author_obj.username:
+                return Response({'message': f'''That's unfortunate! \n\n u/{loan_obj.lender.username} has confirmed that they have not received a repayment for the [loan]({loan_obj}) from 
                             u/{loan_obj.borrower.username} and the loan is thus marked as unpaid. \n\n The mods will be notified automatically! (Loan ID `{loan_obj.loan_id}`: `Unpaid`)'''}, status=status.HTTP_200_OK)
+            elif author_obj.is_mod:
+                return Response({'message': f'''**Moderator Command** \n\n That's unfortunate! \n\n The moderator u/{author_obj.username} has confirmed that u/{loan_obj.lender.username} has not received a repayment for the `loan {loan_obj.loan_id})` from 
+                            u/{loan_obj.borrower.username} and the loan is thus marked as unpaid. \n\n (Loan ID `{loan_obj.loan_id}`: `Unpaid`)'''}, status=status.HTTP_200_OK)
         
         except Loan.DoesNotExist:
             return Response({'message': f'''No active loan found! Please ensure that the `$loan` command was used and the comment has been responded
@@ -473,9 +489,13 @@ class CheckUserLoansView(APIView):
                 records.append(record)
 
             markdown_table = generate_markdown_table(reduce_to_latest_5_loans(records=records))
+            
+            if user_obj.has_unpaid_loan:
+                unpaid_loan_message = "\n\n**WARNING**: /u/{} has an unpaid loan!".format(user_obj.username)
 
             return Response({'message':
 f'''Here are the requested details of the user u/{user_obj.username}. \n\n
+{unpaid_loan_message}
 **u/{user_obj.username} as a borrower** \n\n
 The user has a total of `{user_obj.borrower_pending_loan_count}` outstanding loan(s), for a pending borrowed balance of `{user_obj.borrower_pending_loan_balance} USD`.\n\n
 The user has a total of `{user_obj.borrower_completed_loan_count}` completed loan(s), for a total borrowed balance of `{user_obj.borrower_completed_loan_balance} USD`.\n\n
@@ -548,7 +568,8 @@ class CancelLoanWithIDView(APIView):
         try:
             loan_obj = Loan.objects.get(loan_id=self.request.data['loan_id'], is_cancelled=False, is_paid=False)
             author = self.request.data['author']
-            if loan_obj.lender.username != author:
+            author_obj, _ = RedditUser.objects.get_or_create(username=author)
+            if loan_obj.lender.username != author_obj.username and not author_obj.is_mod:
                 return Response({'message': f'''You are not the lender of this loan. You cannot 'cancel' this loan. If this is an error, please contact 
                                 a moderator.'''}, status=status.HTTP_200_OK) 
             if loan_obj.is_cancelled:
@@ -569,12 +590,19 @@ class CancelLoanWithIDView(APIView):
             borrower_obj.borrower_pending_loan_balance -= loan_obj.amount_in_usd
             borrower_obj.borrower_pending_loan_count -= 1
             borrower_obj.save()
-            return Response({'message': 
-                             f'''I have noted that down! \n\n u/{loan_obj.borrower.username} has cancelled their loan of {loan_obj.amount} {loan_obj.currency} from 
+            
+            if loan_obj.lender.username == author_obj.username:
+                return Response({'message': 
+f'''I have noted that down! \n\n u/{loan_obj.borrower.username} has cancelled their loan of {loan_obj.amount} {loan_obj.currency} from 
 u/{loan_obj.lender.username} and the loan is thus marked as cancelled. (Loan ID `{loan_obj.loan_id}`: `Cancelled`) \n\n
 **Note**: No further actions will work on this loan (this loan cannot be marked as paid/unpaid/confirmed). If this loan is reinstated, please use the `$loan` command again.
 '''}, status=status.HTTP_200_OK)
-        
+            elif author_obj.is_mod:
+                return Response({'message':
+f'''**Moderator Command** \n\n I have noted that down! \n\n The moderator u/{author_obj.username} has cancelled the loan from the lender u/{loan_obj.lender.username} of {loan_obj.amount} {loan_obj.currency} from
+u/{loan_obj.borrower.username} and the loan is thus marked as cancelled. (Loan ID `{loan_obj.loan_id}`: `Cancelled`) \n\n
+**Note**: No further actions will work on this loan (this loan cannot be marked as paid/unpaid/confirmed). If this loan is reinstated, please use the `$loan` command again.
+'''}, status=status.HTTP_200_OK)
         except Loan.DoesNotExist:
             return Response({'message': f'''No existing loan found! Please ensure that the lender has used the `$loan` command and the comment has been responded
                               to by the bot. \n\n Paid loans cannot be cancelled. Please contact a mod!'''}, status=status.HTTP_200_OK)

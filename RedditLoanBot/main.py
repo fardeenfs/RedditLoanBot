@@ -28,7 +28,7 @@ def main():
     )
 
     subreddit = reddit.subreddit(os.getenv('SUBREDDIT'))
-    comment_stream = subreddit.stream.comments()
+    comment_stream = subreddit.stream.comments(skip_existing=True)
    
     for comment in comment_stream:
         
