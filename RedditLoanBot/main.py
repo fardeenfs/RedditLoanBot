@@ -82,13 +82,18 @@ def request_loan(comment):
     print("Loan", comment, lender, borrower, submission.url, comment.created_utc, comment.body)
 
     comment_body = comment.body.split()
-
-    if len(comment_body) >= 3:
-        amount = str(comment_body[1])
-        currency = str(comment_body[2])
-    elif len(comment_body) == 2:
-        amount = str(comment_body[1])
-        currency = 'USD'
+    if len(comment_body) >= 2:
+        if comment_body[1].startswith('u/'):
+            borrower = comment_body[1][2:]
+            amount = str(comment_body[2]) if len(comment_body) >= 3 else None
+            currency = str(comment_body[3]) if len(comment_body) >= 4 else 'USD'
+        elif comment_body[1].startswith('/u/'):
+            borrower = comment_body[1][3:]
+            amount = str(comment_body[2]) if len(comment_body) >= 3 else None
+            currency = str(comment_body[3]) if len(comment_body) >= 4 else 'USD'
+        else:
+            amount = str(comment_body[1])
+            currency = str(comment_body[2]) if len(comment_body) >= 3 else 'USD'
     else:
         data = {
                 comment.id: comment.body,
@@ -102,7 +107,7 @@ def request_loan(comment):
     
     red_amount = re.sub("[^0-9.]", "", amount)
     
-    if len(red_amount) - len(amount) > 1:
+    if len(red_amount) - len(amount) > 1 or not red_amount:
         data = {
                 comment.id: comment.body,
             }
