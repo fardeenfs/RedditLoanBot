@@ -51,7 +51,7 @@ def main():
             paid_loan_by_thread(comment)
 
         # check if the first word is $confirm
-        if comment.body.split()[0].lower() == '$confirm':
+        if comment.body.split()[0].lower() in ['$confirm', '$confirmed']:
             confirm_loan_by_thread(comment)
 
         # check if the first word is $unpaid
