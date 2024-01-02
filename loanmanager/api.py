@@ -59,10 +59,18 @@ class LoanViewSet(viewsets.ModelViewSet):
         lender_obj, _ = RedditUser.objects.get_or_create(username=lender_username)
         borrower_obj, _ = RedditUser.objects.get_or_create(username=borrower_username)
 
+        outstanding_borrowed_loans = Loan.objects.filter(borrower=lender_obj, is_paid=False, is_cancelled=False)
+
+        if lender_obj.username == borrower_obj.username:
+                return Response({'message': f'''You cannot lend to yourself!'''}, status=status.HTTP_200_OK)
+
+        if len(outstanding_borrowed_loans) > 0:
+            return Response({'message': f'''You are not allowed to lend at this time. You have one or more outstanding loan(s) where you are the borrower. 
+You cannot be a lender and borrower at the same time! \n\n
+You can lend again once you have paid these loans. Use the $check command to see the details of these loans. \n\n If the loan has been paid, but the lender has not
+marked it as 'paid', request them to do so or contact the mods. '''}, status=status.HTTP_200_OK)
+        
         try:
-            if lender_obj.username == borrower_obj.username:
-                raise serializers.ValidationError("You cannot lend to yourself!")
-            
             data = copy.deepcopy(request.data)
 
 
