@@ -167,7 +167,7 @@ class ConfirmLoanWithIDView(APIView):
             
             loan_obj.is_confirmed = True
             loan_obj.save()
-            if loan_obj.lender.username == author_obj.username:
+            if loan_obj.borrower.username == author_obj.username:
                 return Response({'message': f'''I have noted that down! \n\n u/{loan_obj.borrower.username} has confirmed that they have received {loan_obj.amount} {loan_obj.currency} from 
                             u/{loan_obj.lender.username} and the loan is thus marked as confirmed. (Loan ID `{loan_obj.loan_id}`: `Confirmed`)'''}, status=status.HTTP_200_OK)
             elif author_obj.is_mod:
