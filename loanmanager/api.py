@@ -91,7 +91,8 @@ marked it as 'paid', request them to do so or contact the mods. '''}, status=sta
                 else:
                     data['amount_in_usd'] = data['amount']
             except:
-                raise Response({'message': f'''Something went wrong. Please contact a moderator for support.'''}, status=status.HTTP_200_OK)
+                data['currency'] = 'USD'
+                data['amount_in_usd'] = data['amount']
 
 
             # Proceed with normal creation process
@@ -311,7 +312,8 @@ class PayLoanWithIDView(APIView):
                 else:
                     amount_in_usd = amount
             except:
-                raise Response({'message': f'''Something went wrong. Please contact a moderator for support.'''}, status=status.HTTP_200_OK)
+                currency = 'USD'
+                amount_in_usd = amount
 
             # Update RedditUser objects
             lender_obj.lender_pending_loan_balance -= loan_obj.amount_in_usd
