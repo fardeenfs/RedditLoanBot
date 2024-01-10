@@ -176,8 +176,13 @@ def paid_loan_with_id(comment):
         loan_id = str(comment_body[1])
         amount = str(comment_body[2])
         currency = 'USD'
+    elif len(comment_body) == 2:
+        loan_id = str(comment_body[1])
+        amount = ''
+        currency = ''
     else:
         return()
+        
     
     red_amount = re.sub("[^0-9.]", "", amount)
     
