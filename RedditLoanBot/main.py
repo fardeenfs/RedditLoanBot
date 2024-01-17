@@ -199,7 +199,7 @@ def paid_loan_with_id(comment):
     data = {
         'author': author,
         'loan_id': loan_id,
-        'amount': amount,
+        'amount': red_amount,
         'currency': currency,
         'comment_id': comment.id,
     }
@@ -220,8 +220,6 @@ def paid_loan_by_thread(comment):
     elif len(comment_body) == 2:
         amount = str(comment_body[1])
         currency = 'USD'
-    else:
-        return()
 
     red_amount = re.sub("[^0-9.]", "", amount)
     
@@ -237,7 +235,7 @@ def paid_loan_by_thread(comment):
 
     data = {
         'author': author,
-        'amount': amount,
+        'amount': red_amount,
         'currency': currency,
         'comment_id': comment.id,
         'thread_id': comment.submission.id,

@@ -11,8 +11,6 @@ from rest_framework.decorators import action
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework import serializers
-from forex_python.converter import CurrencyRates
-
 
 def check_if_comment_has_been_replied_to(comment_id):
     # Check if comment has been replied to
@@ -231,20 +229,6 @@ class PayLoanByThreadView(APIView):
             lender_obj = loan_obj.lender
             borrower_obj = loan_obj.borrower
 
-            # TODO: If currency is not USD, convert amount to USD
-            try:
-                if currency != 'USD':
-                    c = CurrencyRates()
-                    # Decimal to 2 places
-                    converted_amount = c.convert(currency, 'USD', decimal.Decimal(amount))
-                    # Round to 2 decimal places
-                    amount_in_usd = converted_amount.quantize(decimal.Decimal('0.01'), rounding=decimal.ROUND_HALF_UP)                                  
-                else:
-                    amount_in_usd = amount
-            except:
-                currency = 'USD'
-                amount_in_usd = amount 
-
 
             # Update RedditUser objects
             lender_obj.lender_pending_loan_balance -= loan_obj.amount_in_usd
@@ -257,7 +241,7 @@ class PayLoanByThreadView(APIView):
             borrower_obj.borrower_pending_loan_count -= 1
             borrower_obj.borrower_completed_loan_balance += loan_obj.amount_in_usd
             borrower_obj.borrower_completed_loan_count += 1
-            borrower_obj.borrower_repayment_total += amount_in_usd
+            borrower_obj.borrower_repayment_total += loan_obj.amount_in_usd
             borrower_obj.save()
 
             return Response({'message': f'''That's sweet! I will note that down. \n\n u/{loan_obj.lender.username} has confirmed that they have received {amount} {currency} from 
@@ -294,6 +278,8 @@ class PayLoanWithIDView(APIView):
             loan_obj.is_paid = True
             loan_obj.save()
 
+            print('Amount: ', amount)
+            print('Currency: ', currency)
             if amount != '':
                 amount = decimal.Decimal(amount)
             else:
@@ -309,18 +295,6 @@ class PayLoanWithIDView(APIView):
             lender_obj = loan_obj.lender
             borrower_obj = loan_obj.borrower
 
-            try:
-                if currency != 'USD':
-                    c = CurrencyRates()
-                    # Decimal to 2 places
-                    converted_amount = c.convert(currency, 'USD', decimal.Decimal(amount))
-                    # Round to 2 decimal places
-                    amount_in_usd = converted_amount.quantize(decimal.Decimal('0.01'), rounding=decimal.ROUND_HALF_UP)                                  
-                else:
-                    amount_in_usd = amount
-            except:
-                currency = 'USD'
-                amount_in_usd = amount 
 
             # Update RedditUser objects
             lender_obj.lender_pending_loan_balance -= loan_obj.amount_in_usd
@@ -333,7 +307,7 @@ class PayLoanWithIDView(APIView):
             borrower_obj.borrower_pending_loan_count -= 1
             borrower_obj.borrower_completed_loan_balance += loan_obj.amount_in_usd
             borrower_obj.borrower_completed_loan_count += 1
-            borrower_obj.borrower_repayment_total += amount_in_usd
+            borrower_obj.borrower_repayment_total += loan_obj.amount_in_usd
             borrower_obj.save()
 
             if loan_obj.lender.username == author_obj.username:
