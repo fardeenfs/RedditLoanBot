@@ -4,7 +4,7 @@ import math
 from rest_framework import viewsets
 from rest_framework.views import APIView
 
-from loanmanager.helper_funcs import generate_markdown_table, reduce_to_latest_5_loans
+from loanmanager.helper_funcs import convert_currency, generate_markdown_table, reduce_to_latest_5_loans
 from .models import CommentsRepliedTo, Loan, Payment, RedditUser
 from .serializers import LoanSerializer, PaymentSerializer
 from rest_framework.decorators import action
@@ -83,14 +83,20 @@ marked it as 'paid', request them to do so or contact the mods. '''}, status=sta
             # TODO: If currency is not USD, convert amount to USD
             try:
                 if data['currency'] != 'USD':
-                    c = CurrencyRates()
-                    # Decimal to 2 places
-                    converted_amount = c.convert(data['currency'], 'USD', decimal.Decimal(data['amount']))
-                    # Round to 2 decimal places
-                    data['amount_in_usd'] = converted_amount.quantize(decimal.Decimal('0.01'), rounding=decimal.ROUND_HALF_UP)                                  
+                    print('Converting currency to ', data['currency'])
+                    converted_amount = convert_currency(data['amount'], data['currency'])
+                    print('Converted amount: ', converted_amount)
+
+                    if converted_amount is not None:
+                        data['amount_in_usd'] = converted_amount
+                    else:
+                        print('Currency conversion failed. Using USD as default')
+                        data['currency'] = 'USD'
+                        data['amount_in_usd'] = data['amount']                               
                 else:
                     data['amount_in_usd'] = data['amount']
             except:
+                print('Currency conversion failed. Using USD as default')
                 data['currency'] = 'USD'
                 data['amount_in_usd'] = data['amount']
 
