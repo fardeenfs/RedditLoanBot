@@ -68,7 +68,7 @@ def convert_currency(amount, currency_to_convert_to):
         exchange_rate = decimal.Decimal(str(data[currency_to_convert_to.lower()]))
 
         # Convert the amount
-        converted_amount = amount * exchange_rate
+        converted_amount = amount / exchange_rate
 
         return converted_amount.quantize(decimal.Decimal('0.01'), rounding=decimal.ROUND_HALF_UP)
     except requests.RequestException as e:
