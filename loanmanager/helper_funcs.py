@@ -1,7 +1,7 @@
 import decimal
 
 import requests
-
+from .models import CurrencyConversion
 
 def reduce_to_latest_5_loans(records):
     # Combine all records
@@ -56,22 +56,15 @@ def generate_markdown_table(loans):
 
 def convert_currency(amount, currency_to_convert_to):
     # Replace {currency_to_convert_to} with the actual currency code
-    url = f"https://raw.githubusercontent.com/fawazahmed0/currency-api/1/latest/currencies/usd/{currency_to_convert_to.lower()}.min.json"
-    
     try:
-        response = requests.get(url)
-        response.raise_for_status()  # Raises an HTTPError if the HTTP request returned an unsuccessful status code
-        
-        # Parse the JSON response
-        data = response.json()
-        print('API response:', data)
-        exchange_rate = decimal.Decimal(str(data[currency_to_convert_to.lower()]))
-
         # Convert the amount
-        converted_amount = amount / exchange_rate
+        conversion = CurrencyConversion.objects.filter(currency=currency_to_convert_to.upper()).first()
+        if not conversion:
+            raise ValueError(f"Conversion rate for {currency_to_convert_to} not found")
+        converted_amount = amount * conversion.conversion_rate_to_usd
 
         return converted_amount.quantize(decimal.Decimal('0.01'), rounding=decimal.ROUND_HALF_UP)
-    except requests.RequestException as e:
+    except Exception as e:
         # Handle any errors that occur during the request
         print(f"An error occurred: {e}")
         return None

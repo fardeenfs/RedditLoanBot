@@ -61,3 +61,10 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"{self.loan.borrower} repaid {self.loan.lender} {self.currency} {self.amount} towards Loan ID {self.loan.loan_id}"
+
+class CurrencyConversion(models.Model):
+    currency = models.CharField(max_length=10, unique=True)
+    conversion_rate_to_usd = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return f"{self.currency} to USD conversion rate: {self.conversion_rate_to_usd}"
