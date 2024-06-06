@@ -11,6 +11,7 @@ from rest_framework.decorators import action
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework import serializers
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 def check_if_comment_has_been_replied_to(comment_id):
     # Check if comment has been replied to
@@ -32,6 +33,7 @@ class TrackCommentView(APIView):
 class LoanViewSet(viewsets.ModelViewSet):
     queryset = Loan.objects.all()
     serializer_class = LoanSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
         queryset = Loan.objects.all()
