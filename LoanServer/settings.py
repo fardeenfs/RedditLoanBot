@@ -76,6 +76,8 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',  # For simple token authentication
         'rest_framework_simplejwt.authentication.JWTAuthentication',  # For JWT authentication
     ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 100
 }
 
 

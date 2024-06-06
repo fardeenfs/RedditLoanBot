@@ -628,3 +628,4 @@ u/{loan_obj.borrower.username} for the amount of {loan_obj.amount} {loan_obj.cur
 class PaymentViewSet(viewsets.ModelViewSet):
     queryset = Payment.objects.all()
     serializer_class = PaymentSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
