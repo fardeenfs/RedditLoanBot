@@ -344,6 +344,16 @@ class UnpaidLoanByThreadView(APIView):
             loan_obj.is_unpaid = True
             loan_obj.borrower.has_unpaid_loan = True
             loan_obj.save()
+
+            lender_obj = loan_obj.lender
+
+             # Update RedditUser objects
+            lender_obj.lender_pending_loan_balance -= loan_obj.amount_in_usd
+            lender_obj.lender_pending_loan_count -= 1
+            lender_obj.lender_unpaid_loan_balance += loan_obj.amount_in_usd
+            lender_obj.lender_unpaid_loan_count += 1
+            lender_obj.save()
+
             return Response({'message': f'''That's unfortunate! \n\n u/{loan_obj.lender.username} has confirmed that they have not received a repayment for the [loan]({loan_obj}) from 
                             u/{loan_obj.borrower.username} and the loan is thus marked as unpaid. \n\n The mods will be notified automatically! (Loan ID `{loan_obj.loan_id}`: `Unpaid`)'''}, status=status.HTTP_200_OK)
         
@@ -377,6 +387,15 @@ class UnpaidLoanWithIDView(APIView):
             borrower_obj = loan_obj.borrower
             borrower_obj.has_unpaid_loan = True
             borrower_obj.save()
+
+            lender_obj = loan_obj.lender
+
+            # Update RedditUser objects
+            lender_obj.lender_pending_loan_balance -= loan_obj.amount_in_usd
+            lender_obj.lender_pending_loan_count -= 1
+            lender_obj.lender_unpaid_loan_balance += loan_obj.amount_in_usd
+            lender_obj.lender_unpaid_loan_count += 1
+            lender_obj.save()
 
             if loan_obj.lender.username == author_obj.username:
                 return Response({'message': f'''That's unfortunate! \n\n u/{loan_obj.lender.username} has confirmed that they have not received a repayment for the [loan]({loan_obj}) from 
@@ -500,6 +519,7 @@ The user has repaid a total of `{user_obj.borrower_repayment_total} USD`.\n\n
 **u/{user_obj.username} as a lender** \n\n
 The user has a total of `{user_obj.lender_pending_loan_count}` outstanding loan(s), for a pending lent out balance of `{user_obj.lender_pending_loan_balance} USD`.\n\n
 The user has a total of `{user_obj.lender_completed_loan_count}` completed loan(s), for a total lent out balance of `{user_obj.lender_completed_loan_balance} USD`.\n\n
+The user has a total of `{user_obj.lender_unpaid_loan_count}` unpaid loan(s), for a total unpaid balance of `{user_obj.lender_unpaid_loan_balance} USD`.\n\n
 \n\n
 Here are the details of the last 5 loans for the user: \n\n
 {markdown_table}

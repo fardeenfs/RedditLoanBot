@@ -20,8 +20,10 @@ class RedditUser(models.Model):
     
     lender_pending_loan_balance = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     lender_completed_loan_balance = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    lender_unpaid_loan_balance = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     lender_pending_loan_count = models.IntegerField(default=0)
     lender_completed_loan_count = models.IntegerField(default=0)
+    lender_unpaid_loan_count = models.IntegerField(default=0)
 
     is_mod = models.BooleanField(default=False)
 
