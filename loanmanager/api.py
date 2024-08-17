@@ -11,7 +11,7 @@ from rest_framework.decorators import action
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework import serializers
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 
 def check_if_comment_has_been_replied_to(comment_id):
     # Check if comment has been replied to
@@ -21,6 +21,8 @@ def check_if_comment_has_been_replied_to(comment_id):
 
 
 class TrackCommentView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
         # Check if comment has been replied to
         if check_if_comment_has_been_replied_to(self.request.data['comment_id']):
@@ -136,6 +138,8 @@ If the borrower has not repaid the loan, the lender can mark the loan as unpaid 
 
 
 class ConfirmLoanByThreadView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
         # Check if comment has been replied to
         if check_if_comment_has_been_replied_to(self.request.data['comment_id']):
@@ -163,6 +167,8 @@ class ConfirmLoanByThreadView(APIView):
         
 
 class ConfirmLoanWithIDView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
         # Check if comment has been replied to
         if check_if_comment_has_been_replied_to(self.request.data['comment_id']):
@@ -194,6 +200,8 @@ class ConfirmLoanWithIDView(APIView):
         
 
 class PayLoanByThreadView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
         # Check if comment has been replied to
         if check_if_comment_has_been_replied_to(self.request.data['comment_id']):
@@ -257,6 +265,8 @@ request the lender to use the `$loan` command again.'''}, status=status.HTTP_200
 
     
 class PayLoanWithIDView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
         # Check if comment has been replied to
         if check_if_comment_has_been_replied_to(self.request.data['comment_id']):
@@ -325,6 +335,8 @@ class PayLoanWithIDView(APIView):
 
 
 class UnpaidLoanByThreadView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
         # Check if comment has been replied to
         if check_if_comment_has_been_replied_to(self.request.data['comment_id']):
@@ -366,6 +378,8 @@ request the lender to use the `$loan` command again'''}, status=status.HTTP_200_
 
 
 class UnpaidLoanWithIDView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
         # Check if comment has been replied to
         if check_if_comment_has_been_replied_to(self.request.data['comment_id']):
@@ -414,6 +428,8 @@ request the lender to use the `$loan` command again'''}, status=status.HTTP_200_
 
 # Return all loans and payments for a given user.
 class CheckUserLoansView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
         # Check if comment has been replied to
         if check_if_comment_has_been_replied_to(self.request.data['comment_id']):
@@ -533,6 +549,8 @@ Here are the details of the last 5 loans for the user: \n\n
 
 
 class CancelLoanByThreadView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
         # Check if comment has been replied to
         if check_if_comment_has_been_replied_to(self.request.data['comment_id']):
@@ -576,6 +594,8 @@ u/{loan_obj.lender.username} and the loan is thus marked as cancelled. (Loan ID 
 
 
 class CancelLoanWithIDView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
         # Check if comment has been replied to
         if check_if_comment_has_been_replied_to(self.request.data['comment_id']):
