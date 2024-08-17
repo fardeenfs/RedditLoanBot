@@ -127,7 +127,7 @@ def request_loan(comment):
         'comment_id': comment.id,
     }
 
-    send_to_backend(f"{os.getenv('BACKEND_URL')}/loans/", data, comment)
+    send_to_backend(f"{os.getenv('BACKEND_URL')}/api/loans/", data, comment)
 
     
 
