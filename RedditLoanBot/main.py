@@ -98,7 +98,7 @@ def request_loan(comment):
         data = {
                 comment.id: comment.body,
             }
-        response = send_to_backend(f"{os.getenv('BACKEND_URL')}/track-comment/", data, comment)
+        response = send_to_backend(f"{os.getenv('BACKEND_URL')}/api/track-comment/", data, comment)
         
         if response != 400:
             comment.reply("I couldn't understand that! Please specify the amount and currency. \n\n Example: $loan 100 USD")
@@ -111,7 +111,7 @@ def request_loan(comment):
         data = {
                 comment.id: comment.body,
             }
-        response = send_to_backend(f"{os.getenv('BACKEND_URL')}/track-comment/", data, comment)
+        response = send_to_backend(f"{os.getenv('BACKEND_URL')}/api/track-comment/", data, comment)
         
         if response != 400:
             comment.reply("I couldn't understand that! Please specify the amount and currency. \n\n Example: $loan 100 USD")
@@ -146,7 +146,7 @@ def confirm_loan_with_id(comment):
         'comment_id': comment.id,
     }
 
-    send_to_backend(f"{os.getenv('BACKEND_URL')}/confirm-loan-with-id/", data, comment)
+    send_to_backend(f"{os.getenv('BACKEND_URL')}/api/confirm-loan-with-id/", data, comment)
 
 
 def confirm_loan_by_thread(comment):
@@ -158,7 +158,7 @@ def confirm_loan_by_thread(comment):
         'thread_id': comment.submission.id,
     }
 
-    send_to_backend(f"{os.getenv('BACKEND_URL')}/confirm-loan-by-thread/", data, comment)
+    send_to_backend(f"{os.getenv('BACKEND_URL')}/api/confirm-loan-by-thread/", data, comment)
 
 
 def paid_loan_with_id(comment):  
@@ -190,7 +190,7 @@ def paid_loan_with_id(comment):
         data = {
                 comment.id: comment.body,
             }
-        response = send_to_backend(f"{os.getenv('BACKEND_URL')}/track-comment/", data, comment)
+        response = send_to_backend(f"{os.getenv('BACKEND_URL')}/api/track-comment/", data, comment)
         
         if response != 400:
             comment.reply("I couldn't understand that! Please use this format. \n\n `$paid_with_id [Loan ID] [Amount] [Currency]`")
@@ -204,7 +204,7 @@ def paid_loan_with_id(comment):
         'comment_id': comment.id,
     }
 
-    send_to_backend(f"{os.getenv('BACKEND_URL')}/pay-loan-with-id/", data, comment)
+    send_to_backend(f"{os.getenv('BACKEND_URL')}/api/pay-loan-with-id/", data, comment)
 
 
 def paid_loan_by_thread(comment):
@@ -227,7 +227,7 @@ def paid_loan_by_thread(comment):
         data = {
                 comment.id: comment.body,
             }
-        response = send_to_backend(f"{os.getenv('BACKEND_URL')}/track-comment/", data, comment)
+        response = send_to_backend(f"{os.getenv('BACKEND_URL')}/api/track-comment/", data, comment)
         
         if response != 400:
             comment.reply("I couldn't understand that! Please use this format. \n\n `$paid_with_id [Loan ID] [Amount] [Currency]`  \n\n Example: `$paid 2 100 USD`")
@@ -241,7 +241,7 @@ def paid_loan_by_thread(comment):
         'thread_id': comment.submission.id,
     }
 
-    send_to_backend(f"{os.getenv('BACKEND_URL')}/pay-loan-by-thread/", data, comment)
+    send_to_backend(f"{os.getenv('BACKEND_URL')}/api/pay-loan-by-thread/", data, comment)
 
 
 def unpaid_loan_with_id(comment, subreddit):
@@ -259,7 +259,7 @@ def unpaid_loan_with_id(comment, subreddit):
         'comment_id': comment.id,
     }
 
-    response = send_to_backend(f"{os.getenv('BACKEND_URL')}/unpaid-loan-with-id/", data, comment)
+    response = send_to_backend(f"{os.getenv('BACKEND_URL')}/api/unpaid-loan-with-id/", data, comment)
     if response != 400:
         send_mod_mail(subreddit,'Unpaid Loan Alert', f"u/{comment.author} has reported an unpaid loan on this thread: {comment.submission.url}. \n\n This is the link to the comment: {comment.permalink}")
 
@@ -274,7 +274,7 @@ def unpaid_loan_by_thread(comment, subreddit):
         'comment_id': comment.id,
     }
 
-    response = send_to_backend(f"{os.getenv('BACKEND_URL')}/unpaid-loan-by-thread/", data, comment)
+    response = send_to_backend(f"{os.getenv('BACKEND_URL')}/api/unpaid-loan-by-thread/", data, comment)
     if response != 400:
         send_mod_mail(subreddit,'Unpaid Loan Alert', f"u/{comment.author} has reported an unpaid loan on this thread: {comment.submission.url}. \n\n This is the link to the comment: {comment.permalink}")
 
@@ -297,7 +297,7 @@ def check_user(comment):
         'comment_id': comment.id,
     }
 
-    send_to_backend(f"{os.getenv('BACKEND_URL')}/check-user-loans/", data, comment)
+    send_to_backend(f"{os.getenv('BACKEND_URL')}/api/check-user-loans/", data, comment)
 
 
 def cancel_loan_by_thread(comment):
@@ -309,7 +309,7 @@ def cancel_loan_by_thread(comment):
         'thread_id': comment.submission.id,
     }
 
-    send_to_backend(f"{os.getenv('BACKEND_URL')}/cancel-loan-by-thread/", data, comment)
+    send_to_backend(f"{os.getenv('BACKEND_URL')}/api/cancel-loan-by-thread/", data, comment)
 
 
 def cancel_loan_with_id(comment):
@@ -328,7 +328,7 @@ def cancel_loan_with_id(comment):
         'comment_id': comment.id,
     }
 
-    send_to_backend(f"{os.getenv('BACKEND_URL')}/cancel-loan-with-id/", data, comment)
+    send_to_backend(f"{os.getenv('BACKEND_URL')}/api/cancel-loan-with-id/", data, comment)
 
 
 

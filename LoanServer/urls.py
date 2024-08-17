@@ -33,6 +33,8 @@ from loanmanager.api import (
 )
 from rest_framework_simplejwt import views as jwt_views
 
+from loanmanager.views import loan_list
+
 
 
 # Create a router and register our viewsets with it.
@@ -41,21 +43,22 @@ router.register('loans', LoanViewSet)
 router.register('payments', PaymentViewSet)
 
 urlpatterns = [
+    path('', loan_list, name='loan-list'),
     # The API URLs are now determined automatically by the router.
-    path('', include(router.urls)),
+    path('api/', include(router.urls)),
     path('admin/', admin.site.urls),
     
     # Additional custom view URLs
-    path('confirm-loan-by-thread/', ConfirmLoanByThreadView.as_view(), name='confirm-loan'),
-    path('confirm-loan-with-id/', ConfirmLoanWithIDView.as_view(), name='confirm-loan'),
-    path('pay-loan-by-thread/', PayLoanByThreadView.as_view(), name='pay-loan-by-thread'),
-    path('pay-loan-with-id/', PayLoanWithIDView.as_view(), name='pay-loan-by-id'),
-    path('unpaid-loan-by-thread/', UnpaidLoanByThreadView.as_view(), name='unpaid-loan-by-thread'),
-    path('unpaid-loan-with-id/', UnpaidLoanWithIDView.as_view(), name='unpaid-loan-by-id'),
-    path('check-user-loans/', CheckUserLoansView.as_view(), name='check-user-loans'),
-    path('cancel-loan-by-thread/', CancelLoanByThreadView.as_view(), name='cancel-loan-by-thread'),
-    path('cancel-loan-with-id/', CancelLoanWithIDView.as_view(), name='cancel-loan-by-id'),
-    path('track-comment/', TrackCommentView.as_view(), name='track-comment'),
+    path('api/confirm-loan-by-thread/', ConfirmLoanByThreadView.as_view(), name='confirm-loan'),
+    path('api/confirm-loan-with-id/', ConfirmLoanWithIDView.as_view(), name='confirm-loan'),
+    path('api/pay-loan-by-thread/', PayLoanByThreadView.as_view(), name='pay-loan-by-thread'),
+    path('api/pay-loan-with-id/', PayLoanWithIDView.as_view(), name='pay-loan-by-id'),
+    path('api/unpaid-loan-by-thread/', UnpaidLoanByThreadView.as_view(), name='unpaid-loan-by-thread'),
+    path('api/unpaid-loan-with-id/', UnpaidLoanWithIDView.as_view(), name='unpaid-loan-by-id'),
+    path('api/check-user-loans/', CheckUserLoansView.as_view(), name='check-user-loans'),
+    path('api/cancel-loan-by-thread/', CancelLoanByThreadView.as_view(), name='cancel-loan-by-thread'),
+    path('api/cancel-loan-with-id/', CancelLoanWithIDView.as_view(), name='cancel-loan-by-id'),
+    path('api/track-comment/', TrackCommentView.as_view(), name='track-comment'),
 
      # JWT Token authentication URLs
     path('api/token/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
