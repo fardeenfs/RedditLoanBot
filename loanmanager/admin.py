@@ -16,7 +16,7 @@ class LoanAdmin(admin.ModelAdmin):
 
 class PaymentAdmin(admin.ModelAdmin):
     list_filter = ('payment_date')  # Filter by currency and loan association
-    list_display = ('payment_id_display', 'loan_id', 'loan', 'amount', 'currency', 'payment_date')  # Show loan ID in the list
+    list_display = ('id', 'loan_id', 'loan', 'amount', 'currency', 'payment_date')  # Show loan ID in the list
     search_fields = ('loan__loan_id', 'loan__lender__username', 'loan__borrower__username')  # Search by loan ID or usernames
 
     def loan_id(self, obj):
