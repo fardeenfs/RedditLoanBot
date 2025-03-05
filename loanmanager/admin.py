@@ -9,13 +9,13 @@ class RedditUserAdmin(admin.ModelAdmin):
 
 
 class LoanAdmin(admin.ModelAdmin):
-    list_filter = ('is_confirmed', 'is_paid', 'lender', 'borrower', 'creation_date') 
+    list_filter = ('creation_date', 'is_confirmed', 'is_paid') 
     list_display = ('loan_id', 'lender', 'borrower', 'amount', 'currency', 'is_confirmed', 'is_paid') 
     search_fields = ('loan_id', 'lender__username', 'borrower__username') 
 
 
 class PaymentAdmin(admin.ModelAdmin):
-    list_filter = ('payment_date', 'currency', 'loan')  # Filter by currency and loan association
+    list_filter = ('payment_date')  # Filter by currency and loan association
     list_display = ('payment_id_display', 'loan_id', 'loan', 'amount', 'currency', 'payment_date')  # Show loan ID in the list
     search_fields = ('loan__loan_id', 'loan__lender__username', 'loan__borrower__username')  # Search by loan ID or usernames
 
