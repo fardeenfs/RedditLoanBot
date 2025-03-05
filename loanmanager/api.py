@@ -234,7 +234,7 @@ class PayLoanByThreadView(APIView):
             else:
                 currency = loan_obj.currency
                 
-            Payment.objects.get_or_create(loan=loan_obj, amount=amount, currency=currency)
+            payment_obj, _ = Payment.objects.get_or_create(loan=loan_obj, amount=amount, currency=currency)
 
             lender_obj = loan_obj.lender
             borrower_obj = loan_obj.borrower
@@ -255,7 +255,7 @@ class PayLoanByThreadView(APIView):
             borrower_obj.save()
 
             return Response({'message': f'''That's sweet! I will note that down. \n\n u/{loan_obj.lender.username} has confirmed that they have received {amount} {currency} from 
-                            u/{loan_obj.borrower.username} and the loan is thus marked as paid. (Loan ID `{loan_obj.loan_id}`: `Paid`)'''}, status=status.HTTP_200_OK)
+                            u/{loan_obj.borrower.username} and the loan is thus marked as paid. (Loan ID `{loan_obj.loan_id}`: `Paid`) (Payment Record ID `{payment_obj.payment_id_display}`)'''}, status=status.HTTP_200_OK)
         
         except Loan.DoesNotExist:
             return Response({'message': 
@@ -301,7 +301,7 @@ class PayLoanWithIDView(APIView):
             else:
                 currency = loan_obj.currency
 
-            Payment.objects.get_or_create(loan=loan_obj, amount=amount, currency=currency)
+            payment_obj, _ = Payment.objects.get_or_create(loan=loan_obj, amount=amount, currency=currency)
 
             
             lender_obj = loan_obj.lender
@@ -324,10 +324,10 @@ class PayLoanWithIDView(APIView):
 
             if loan_obj.lender.username == author_obj.username:
                 return Response({'message': f'''That's sweet! I will note that down. \n\n u/{loan_obj.lender.username} has confirmed that they have received {amount} {currency} 
-                            from u/{loan_obj.borrower.username} and the loan is thus marked as paid. (Loan ID `{loan_obj.loan_id}`: `Paid`)'''}, status=status.HTTP_200_OK)
+                            from u/{loan_obj.borrower.username} and the loan is thus marked as paid. (Loan ID `{loan_obj.loan_id}`: `Paid`) (Payment Record ID `{payment_obj.payment_id_display}`)'''}, status=status.HTTP_200_OK)
             elif author_obj.is_mod:
                 return Response({'message': f'''**Moderator Command** \n\n That's sweet! I will note that down. \n\n The moderator u/{author_obj.username} has confirmed that u/{loan_obj.lender.username} has received {amount} {currency} 
-                            from u/{loan_obj.borrower.username} and the loan is thus marked as paid. (Loan ID `{loan_obj.loan_id}`: `Paid`)'''}, status=status.HTTP_200_OK)
+                            from u/{loan_obj.borrower.username} and the loan is thus marked as paid. (Loan ID `{loan_obj.loan_id}`: `Paid`) (Payment Record ID `{payment_obj.payment_id_display}`)'''}, status=status.HTTP_200_OK)
     
         except Loan.DoesNotExist:
             return Response({'message': f'''No active loan found! Please ensure that the `$loan` command was used and the comment has been responded
@@ -661,6 +661,9 @@ class CancelPaymentView(APIView):
 
             if not payment_id:
                 return Response({'message': 'Please provide a valid payment ID.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            if payment_id.startswith('P'):
+                payment_id = payment_id[1:]
 
             author_obj, _ = RedditUser.objects.get_or_create(username=author)
             payment = Payment.objects.get(id=payment_id, is_cancelled=False)
@@ -676,7 +679,7 @@ class CancelPaymentView(APIView):
 
             loan_obj.is_paid = False
             loan_obj.save()
-            
+
             # Reverse the payment effects
             lender_obj = loan_obj.lender
             borrower_obj = loan_obj.borrower
@@ -698,7 +701,7 @@ class CancelPaymentView(APIView):
             payment.is_cancelled = True
             payment.save()
 
-            return Response({'message': f'Payment ID `{payment_id}` has been successfully canceled.'}, status=status.HTTP_200_OK)
+            return Response({'message': f'Payment ID `{payment.payment_id_display}` has been successfully canceled and the payment marker towards Loan ID `{loan_obj.loan_id}` for `{payment.amount} {payment.currency}` has been removed.'}, status=status.HTTP_200_OK)
 
         except Payment.DoesNotExist:
             return Response({'message': 'No active payment found with this ID.'}, status=status.HTTP_400_BAD_REQUEST)

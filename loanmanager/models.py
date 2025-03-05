@@ -64,6 +64,10 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"{self.loan.borrower} repaid {self.loan.lender} {self.currency} {self.amount} towards Loan ID {self.loan.loan_id}"
+    
+    @property
+    def payment_id_display(self):
+        return f"P{self.id}"
 
 class CurrencyConversion(models.Model):
     currency = models.CharField(max_length=10, unique=True)
