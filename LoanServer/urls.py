@@ -29,7 +29,8 @@ from loanmanager.api import (
     CancelLoanByThreadView,
     CancelLoanWithIDView,
     TrackCommentView,
-    PaymentViewSet
+    PaymentViewSet,
+    CancelPaymentView
 )
 from rest_framework_simplejwt import views as jwt_views
 
@@ -58,6 +59,7 @@ urlpatterns = [
     path('api/check-user-loans/', CheckUserLoansView.as_view(), name='check-user-loans'),
     path('api/cancel-loan-by-thread/', CancelLoanByThreadView.as_view(), name='cancel-loan-by-thread'),
     path('api/cancel-loan-with-id/', CancelLoanWithIDView.as_view(), name='cancel-loan-by-id'),
+    path('api/cancel-payment-with-id/', CancelPaymentView.as_view(), name='cancel-payment-by-id'),
     path('api/track-comment/', TrackCommentView.as_view(), name='track-comment'),
 
      # JWT Token authentication URLs

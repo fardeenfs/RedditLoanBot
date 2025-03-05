@@ -60,6 +60,7 @@ class Payment(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     currency = models.CharField(max_length=10)
     payment_date = models.DateTimeField(auto_now_add=True)
+    is_cancelled = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.loan.borrower} repaid {self.loan.lender} {self.currency} {self.amount} towards Loan ID {self.loan.loan_id}"

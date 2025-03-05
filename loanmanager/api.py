@@ -645,6 +645,69 @@ u/{loan_obj.borrower.username} for the amount of {loan_obj.amount} {loan_obj.cur
                               to by the bot. \n\n Paid loans cannot be cancelled. Please contact a mod!'''}, status=status.HTTP_200_OK)
 
 
+
+class CancelPaymentView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        if check_if_comment_has_been_replied_to(self.request.data['comment_id']):
+            return Response({'message': f'''This comment has already been replied to!'''}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            CommentsRepliedTo.objects.create(comment_reddit_id=self.request.data['comment_id'])
+
+        try:
+            payment_id = request.data.get('payment_id')
+            author = request.data.get('author')
+
+            if not payment_id:
+                return Response({'message': 'Please provide a valid payment ID.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            author_obj, _ = RedditUser.objects.get_or_create(username=author)
+            payment = Payment.objects.get(id=payment_id, is_cancelled=False)
+            loan_obj = payment.loan
+
+            # Ensure only the lender or a mod can cancel
+            if loan_obj.lender.username != author_obj.username and not author_obj.is_mod:
+                return Response({'message': 'Only the lender or a moderator can cancel this payment.'}, status=status.HTTP_403_FORBIDDEN)
+
+            # Prevent double cancellation
+            if payment.is_cancelled:
+                return Response({'message': 'This payment has already been canceled.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            loan_obj.is_paid = False
+            loan_obj.save()
+            
+            # Reverse the payment effects
+            lender_obj = loan_obj.lender
+            borrower_obj = loan_obj.borrower
+
+            lender_obj.lender_pending_loan_balance += loan_obj.amount_in_usd
+            lender_obj.lender_pending_loan_count += 1
+            lender_obj.lender_completed_loan_balance -= loan_obj.amount_in_usd
+            lender_obj.lender_completed_loan_count -= 1
+            lender_obj.save()
+
+            borrower_obj.borrower_pending_loan_balance += loan_obj.amount_in_usd
+            borrower_obj.borrower_pending_loan_count += 1
+            borrower_obj.borrower_completed_loan_balance -= loan_obj.amount_in_usd
+            borrower_obj.borrower_completed_loan_count -= 1
+            borrower_obj.borrower_repayment_total -= loan_obj.amount_in_usd
+            borrower_obj.save()
+
+            # Mark payment as canceled
+            payment.is_cancelled = True
+            payment.save()
+
+            return Response({'message': f'Payment ID `{payment_id}` has been successfully canceled.'}, status=status.HTTP_200_OK)
+
+        except Payment.DoesNotExist:
+            return Response({'message': 'No active payment found with this ID.'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+
 class PaymentViewSet(viewsets.ModelViewSet):
     queryset = Payment.objects.all()
     serializer_class = PaymentSerializer

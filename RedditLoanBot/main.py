@@ -74,6 +74,10 @@ def main():
         if comment.body.split()[0].lower() in ['$cancel\_with\_id', '$cancel_with_id']:
             cancel_loan_with_id(comment)
 
+        # check if the first word is $cancel_payment
+        if comment.body.split()[0].lower() in ['$cancel\_payment', 'cancel\_payment\_with\_id']:
+            cancel_payment_with_id(comment)
+
 
 def request_loan(comment):
     lender = comment.author
@@ -329,6 +333,25 @@ def cancel_loan_with_id(comment):
     }
 
     send_to_backend(f"{os.getenv('BACKEND_URL')}/api/cancel-loan-with-id/", data, comment)
+
+
+def cancel_payment_with_id(comment):
+    
+    author = comment.author
+    comment_body = comment.body.split()
+
+    if len(comment_body) >= 2:
+        payment_id = comment_body[1]
+    else:
+        return()
+
+    data = {
+        'author': author,
+        'payment_id': payment_id,
+        'comment_id': comment.id,
+    }
+
+    send_to_backend(f"{os.getenv('BACKEND_URL')}/api/cancel-payment-with-id/", data, comment)
 
 
 
