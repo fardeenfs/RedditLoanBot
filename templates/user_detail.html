@@ -130,6 +130,7 @@
             <th>Currency</th>
             <th>Status</th>
             <th>Created</th>
+            <th>Original Thread</th>
           </tr>
         </thead>
         <tbody>
@@ -146,6 +147,7 @@
               {% if loan.is_paid %}Paid{% elif loan.is_unpaid %}Unpaid{% elif loan.is_cancelled %}Cancelled{% else %}Pending{% endif %}
             </td>
             <td>{{ loan.creation_date }}</td>
+            <td>{{ loan.original_thread}}</td>
           </tr>
           {% empty %}
           <tr><td colspan="5" class="text-center text-muted">No loans taken.</td></tr>
@@ -179,6 +181,7 @@
             <th>Currency</th>
             <th>Status</th>
             <th>Created</th>
+            <th>Original Thread</th>
           </tr>
         </thead>
         <tbody>
@@ -196,6 +199,7 @@
               {% if loan.is_paid %}Paid{% elif loan.is_unpaid %}Unpaid{% elif loan.is_cancelled %}Cancelled{% else %}Pending{% endif %}
             </td>
             <td>{{ loan.creation_date }}</td>
+            <td>{{ loan.original_thread}}</td>
           </tr>
           {% empty %}
           <tr><td colspan="5" class="text-center text-muted">No loans given.</td></tr>
