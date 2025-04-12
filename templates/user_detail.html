@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ user.username }} – Loan Info</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .container {
+      margin-top: 40px;
+    }
+    .card {
+      margin-bottom: 30px;
+    }
+    .custom-green {
+      background-color: #5eff83 !important;
+    }
+    .custom-red {
+      background-color: #ffb6bd !important;
+    }
+    .custom-yellow {
+      background-color: #ffe598 !important;
+    }
+    .custom-grey {
+      background-color: #d2d2d2 !important;
+    }
+    .pagination {
+      justify-content: center;
+    }
+
+    .table {
+        table-layout: fixed;
+    }
+
+    .table th, .table td {
+        word-wrap: break-word;
+        overflow: hidden;
+    }
+
+
+
+    .table th:nth-child(2), .table td:nth-child(2) { 
+        width: 20%;
+    }
+
+    .table th:nth-child(3), .table td:nth-child(3) { 
+        width: 15%;
+    }
+
+
+  </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3 py-1">
+        <div class="container-fluid">
+            <div class="d-flex flex-column">
+                <a class="navbar-brand fw-bold mb-0 text-white" href="#">SimpleLoans</a>
+            </div>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link text-white {% if request.path == '/' %}active{% endif %}" href="/">Loan Search</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white {% if request.path == '/user/' %}active{% endif %}" href="/user/">User Search</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+  <div class="container">
+        <div class="row mb-4">
+            <div class="col-md-8 offset-md-2">
+                <h1 class="text-center"> Results for profile - <i>{{ user.username }}</i></h1>
+                <h6 class="text-center">As recorded by u/simpleloans_bot on r/SimpleLoans</h6><hr>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <div class="card shadow-sm">
+          <div class="card-header bg-primary text-white">
+            <strong>Borrower Stats (In USD)</strong>
+          </div>
+          <div class="card-body">
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item"><strong>Pending Loans Total:</strong> ${{ user.borrower_pending_loan_balance }}</li>
+              <li class="list-group-item"><strong>Completed Loans Total:</strong> ${{ user.borrower_completed_loan_balance }}</li>
+              <li class="list-group-item"><strong>Total Repayment:</strong> ${{ user.borrower_repayment_total }}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card shadow-sm">
+          <div class="card-header bg-success text-white">
+            <strong>Lender Stats (In USD)</strong>
+          </div>
+          <div class="card-body">
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item"><strong>Pending Loans Total:</strong> ${{ user.lender_pending_loan_balance }}</li>
+              <li class="list-group-item"><strong>Completed Loans Total:</strong> ${{ user.lender_completed_loan_balance }}</li>
+              <li class="list-group-item"><strong>Unpaid Loans Total:</strong> ${{ user.lender_unpaid_loan_balance }}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <h3 class="mb-3">Loans Taken (as Borrower)</h3>
+    <div class="table-responsive mb-3">
+      <table class="table table-bordered table-hover bg-white shadow-sm">
+        <thead class="table-light">
+          <tr>
+            <th>Lender</th>
+            <th>Borrower</th>
+            <th>Amount</th>
+            <th>Currency</th>
+            <th>Status</th>
+            <th>Created</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for loan in borrowed_loans %}
+          <tr class="{% if loan.is_paid %}custom-green
+           {% elif loan.is_unpaid %}custom-red
+           {% elif loan.is_cancelled %}custom-grey
+           {% else %}custom-yellow{% endif %}">
+            <td>{{ loan.lender.username }}</td>
+            <td>{{ loan.borrower.username }}</td>
+            <td>{{ loan.amount }}</td>
+            <td>{{ loan.currency }}</td>
+            <td>
+              {% if loan.is_paid %}Paid{% elif loan.is_unpaid %}Unpaid{% elif loan.is_cancelled %}Cancelled{% else %}Pending{% endif %}
+            </td>
+            <td>{{ loan.creation_date }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5" class="text-center text-muted">No loans taken.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <nav aria-label="Borrower loan pagination">
+      <ul class="pagination">
+        {% if borrowed_loans.has_previous %}
+          <li class="page-item"><a class="page-link" href="?borrowed_page=1&lent_page={{ lent_loans.number }}">« First</a></li>
+          <li class="page-item"><a class="page-link" href="?borrowed_page={{ borrowed_loans.previous_page_number }}&lent_page={{ lent_loans.number }}">‹ Prev</a></li>
+        {% endif %}
+        <li class="page-item disabled"><span class="page-link">Page {{ borrowed_loans.number }} of {{ borrowed_loans.paginator.num_pages }}</span></li>
+        {% if borrowed_loans.has_next %}
+          <li class="page-item"><a class="page-link" href="?borrowed_page={{ borrowed_loans.next_page_number }}&lent_page={{ lent_loans.number }}">Next ›</a></li>
+          <li class="page-item"><a class="page-link" href="?borrowed_page={{ borrowed_loans.paginator.num_pages }}&lent_page={{ lent_loans.number }}">Last »</a></li>
+        {% endif %}
+      </ul>
+    </nav>
+
+    <h3 class="mt-5 mb-3">Loans Given (as Lender)</h3>
+    <div class="table-responsive mb-3">
+      <table class="table table-bordered table-hover bg-white shadow-sm">
+        <thead class="table-light">
+          <tr>
+            <th>Lender</th>
+            <th>Borrower</th>
+            <th>Amount</th>
+            <th>Currency</th>
+            <th>Status</th>
+            <th>Created</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for loan in lent_loans %}
+          <tr class="{% if loan.is_paid %}custom-green
+           {% elif loan.is_unpaid %}custom-red
+           {% elif loan.is_cancelled %}custom-grey
+           {% else %}custom-yellow{% endif %}">
+
+            <td>{{ loan.lender.username }}</td>
+            <td>{{ loan.borrower.username }}</td>
+            <td>{{ loan.amount }}</td>
+            <td>{{ loan.currency }}</td>
+            <td>
+              {% if loan.is_paid %}Paid{% elif loan.is_unpaid %}Unpaid{% elif loan.is_cancelled %}Cancelled{% else %}Pending{% endif %}
+            </td>
+            <td>{{ loan.creation_date }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5" class="text-center text-muted">No loans given.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <nav aria-label="Lender loan pagination">
+      <ul class="pagination">
+        {% if lent_loans.has_previous %}
+          <li class="page-item"><a class="page-link" href="?lent_page=1&borrowed_page={{ borrowed_loans.number }}">« First</a></li>
+          <li class="page-item"><a class="page-link" href="?lent_page={{ lent_loans.previous_page_number }}&borrowed_page={{ borrowed_loans.number }}">‹ Prev</a></li>
+        {% endif %}
+        <li class="page-item disabled"><span class="page-link">Page {{ lent_loans.number }} of {{ lent_loans.paginator.num_pages }}</span></li>
+        {% if lent_loans.has_next %}
+          <li class="page-item"><a class="page-link" href="?lent_page={{ lent_loans.next_page_number }}&borrowed_page={{ borrowed_loans.number }}">Next ›</a></li>
+          <li class="page-item"><a class="page-link" href="?lent_page={{ lent_loans.paginator.num_pages }}&borrowed_page={{ borrowed_loans.number }}">Last »</a></li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+</body>
+</html>
