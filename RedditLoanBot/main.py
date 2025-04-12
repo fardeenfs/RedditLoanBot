@@ -96,8 +96,15 @@ def request_loan(comment):
             amount = str(comment_body[2]) if len(comment_body) >= 3 else None
             currency = str(comment_body[3]) if len(comment_body) >= 4 else 'USD'
         else:
-            amount = str(comment_body[1])
-            currency = str(comment_body[2]) if len(comment_body) >= 3 else 'USD'
+            # Check for a hyperlink format like [username](https://www.reddit.com/user/username/)
+            match = re.match(r'\[([^\]]+)\]\(https://www\.reddit\.com/user/([^\)]+)\)', comment_body[1])
+            if match:
+                borrower = match.group(2)  # Extract the username from the hyperlink
+                amount = str(comment_body[2]) if len(comment_body) >= 3 else None
+                currency = str(comment_body[3]) if len(comment_body) >= 4 else 'USD'
+            else:
+                amount = str(comment_body[1])
+                currency = str(comment_body[2]) if len(comment_body) >= 3 else 'USD'
     else:
         data = {
                 comment.id: comment.body,
