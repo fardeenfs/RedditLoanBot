@@ -34,7 +34,9 @@
     }
 
     .table {
-        table-layout: fixed;
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: auto;
     }
 
     .table th, .table td {
@@ -42,9 +44,27 @@
         overflow: hidden;
     }
 
+    .table th:nth-child(1), .table td:nth-child(1) { 
+        width: 15%;
+    }
+    .table th:nth-child(2), .table td:nth-child(2) { 
+        width: 15%;
+    }
+    .table th:nth-child(3), .table td:nth-child(3) { 
+        width: 10%;
+    }
+    .table th:nth-child(4), .table td:nth-child(4) { 
+        width: 10%;
+    }
+    .table th:nth-child(5), .table td:nth-child(5) { 
+        width: 10%;
+    }
     .table th:nth-child(6), .table td:nth-child(6) { 
         width: 20%;
     }
+
+
+
 
 
     .table th, .table td {
@@ -52,22 +72,6 @@
         max-width: 200px;
     }
 
-    /* Mobile responsiveness */
-    @media (max-width: 768px) {
-      .table-responsive {
-        -webkit-overflow-scrolling: touch;
-      }
-
-      .table th, .table td {
-        padding: 8px 12px;
-      }
-
-      .table td a {
-        word-wrap: break-word;
-        white-space: normal;
-        text-overflow: ellipsis;
-      }
-    }
   </style>
 </head>
 <body>
