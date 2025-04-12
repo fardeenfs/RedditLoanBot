@@ -72,24 +72,85 @@
                         {% else %}
                             custom-yellow
                         {% endif %}">
+                        <!-- <div class="loan-header">
+                            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                <span class="badge bg-dark">Loan ID: {{ loan.loan_id }}</span>
+                                <span class="fw-semibold text-muted">
+                                    <i class="bi bi-person-fill"></i> 
+                                    {{ loan.lender.username }} → {{ loan.borrower.username }}
+                                </span>
+                            </div>
+                            <div class="display-6 fw-bold">
+                                {{ loan.amount }} {{ loan.currency }}
+                            </div>
+                        </div> -->
+
                         <div class="loan-header">
-                            {{ loan.amount }} {{ loan.currency }} from {{ loan.lender.username }} to {{ loan.borrower.username }}
+                            <span class="badge bg-dark fs-7">Loan ID: {{ loan.loan_id }}</span>
+                            <div class="display-6 fw-bold">
+                                {{ loan.amount }} {{ loan.currency }}
+                            </div>
+                            <div class="text-muted">
+                                <i class="bi bi-arrow-right-circle-fill me-1"></i> 
+                                <strong>{{ loan.lender.username }}</strong> → <strong>{{ loan.borrower.username }}</strong> 
+                            </div>
                         </div>
-                        <div class="loan-details">
-                            <p>Amount in USD: ${{ loan.amount_in_usd }}</p>
-                            <p>Confirmed: {{ loan.is_confirmed|yesno:"Yes,No" }}</p>
-                            <p>Paid: {{ loan.is_paid|yesno:"Yes,No" }}</p>
-                            <p>Unpaid: {{ loan.is_unpaid|yesno:"Yes,No" }}</p>
-                            <p>Cancelled: {{ loan.is_cancelled|yesno:"Yes,No" }}</p>
-                            <p>Original Thread: 
+                        
+                        
+                         <!-- <div class="loan-header">
+                            <div class="mb-2">
+                                <span class="badge bg-dark fs-6">Loan ID: {{ loan.loan_id }}</span>
+                            </div>
+                            <div class="fw-semibold fs-6 text-muted">
+                                <i class="bi bi-person-fill"></i> 
+                                <span class="text-dark">{{ loan.lender.username }}</span> 
+                                <span class="mx-1">→</span> 
+                                <span class="text-dark">{{ loan.borrower.username }}</span>
+                            </div>
+                            <div class="display-6 fw-bold mt-2">
+                                {{ loan.amount }} {{ loan.currency }}
+                            </div>
+                        </div>
+                         -->
+                        
+                        <hr>
+                        <div class="loan-details row">
+
+                            <div class="col-md-6 mb-2">
+                                <span class="fw-semibold">Amount in USD:</span> ${{ loan.amount_in_usd }}
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <span class="fw-semibold">Confirmed:</span>
+                                <span class="badge bg-{{ loan.is_confirmed|yesno:'success,danger' }}">{{ loan.is_confirmed|yesno:"Yes,No" }}</span>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <span class="fw-semibold">Paid:</span>
+                                <span class="badge bg-{{ loan.is_paid|yesno:'success,secondary' }}">{{ loan.is_paid|yesno:"Yes,No" }}</span>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <span class="fw-semibold">Unpaid:</span>
+                                <span class="badge bg-{{ loan.is_unpaid|yesno:'danger,secondary' }}">{{ loan.is_unpaid|yesno:"Yes,No" }}</span>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <span class="fw-semibold">Cancelled:</span>
+                                <span class="badge bg-{{ loan.is_cancelled|yesno:'danger,secondary' }}">{{ loan.is_cancelled|yesno:"Yes,No" }}</span>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <span class="fw-semibold">Original Thread:</span>
                                 {% if loan.original_thread %}
-                                    <a href="{{ loan.original_thread }}" target="_blank">View Thread</a>
+                                    <a href="{{ loan.original_thread }}" target="_blank" class="text-decoration-none">View Thread</a>
                                 {% else %}
-                                    N/A
+                                    <span class="text-muted">N/A</span>
                                 {% endif %}
-                            </p>
-                            <p>Date Created: {{ loan.creation_date }}</p>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <span class="fw-semibold">Created:</span> {{ loan.creation_date }}
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <span class="fw-semibold">Comment ID:</span> {{ loan.comment_id }}
+                            </div>
                         </div>
+                        
                     </div>
                     
                     {% endfor %}
