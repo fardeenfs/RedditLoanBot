@@ -13,6 +13,10 @@ from rest_framework.response import Response
 from rest_framework import serializers
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 
+def get_loan_url_disclaimer(loan_obj):
+    """Generate a disclaimer with the loan URL on simpleloans.live"""
+    return f"\n\n---\n\n*View the most updated version of this loan at: https://simpleloans.live/loan/{loan_obj.loan_id}/*"
+
 def check_if_comment_has_been_replied_to(comment_id):
     # Check if comment has been replied to
     if CommentsRepliedTo.objects.filter(comment_reddit_id=comment_id).count() > 0:
@@ -108,6 +112,9 @@ marked it as 'paid', request them to do so or contact the mods. '''}, status=sta
             serializer.is_valid(raise_exception=True)
             self.perform_create(serializer)
 
+            # Get the created loan object
+            created_loan = Loan.objects.get(loan_id=serializer.data['loan_id'])
+
             # Update RedditUser objects
             lender_obj.lender_pending_loan_balance += decimal.Decimal(data['amount_in_usd'])
             lender_obj.lender_pending_loan_count += 1
@@ -118,7 +125,7 @@ marked it as 'paid', request them to do so or contact the mods. '''}, status=sta
             borrower_obj.save()
 
             return Response({
-                'message': 
+                'message':
 f'''Noted! I will remember that /u/{lender_obj.username} lent {data['amount']} {data['currency'].upper()} to /u/{borrower_obj.username}! \n\n
 **Note**: This does not confirm that the borrower has received the money, but it does confirm that the lender has agreed to lend the money.
 The loan ID is `{serializer.data['loan_id']}`. \n\n
@@ -129,7 +136,7 @@ The lender can mark this loan as paid with the following command: \n\n
 If the loan has been cancelled or refunded, the lender can cancel the loan with the following command: \n\n
 `$cancel_with_id {serializer.data['loan_id']}` or just `$cancel` (if used on this thread)\n\n
 If the borrower has not repaid the loan, the lender can mark the loan as unpaid with the following command: \n\n
-`$unpaid_with_id {serializer.data['loan_id']}` or just `$unpaid` (if used on this thread)\n\n'''
+`$unpaid_with_id {serializer.data['loan_id']}` or just `$unpaid` (if used on this thread){get_loan_url_disclaimer(created_loan)}'''
             }, status=status.HTTP_201_CREATED)
         except serializers.ValidationError as e:
             print(e)
@@ -158,8 +165,8 @@ class ConfirmLoanByThreadView(APIView):
             loan_obj = loan_obj[0]
             loan_obj.is_confirmed = True
             loan_obj.save()
-            return Response({'message': f'''I have noted that down! \n\n u/{loan_obj.borrower.username} has confirmed that they have received {loan_obj.amount} {loan_obj.currency} from 
-                            u/{loan_obj.lender.username} and the loan is thus confirmed. (Loan ID `{loan_obj.loan_id}`: `Confirmed`)'''}, status=status.HTTP_200_OK)
+            return Response({'message': f'''I have noted that down! \n\n u/{loan_obj.borrower.username} has confirmed that they have received {loan_obj.amount} {loan_obj.currency} from
+                            u/{loan_obj.lender.username} and the loan is thus confirmed. (Loan ID `{loan_obj.loan_id}`: `Confirmed`){get_loan_url_disclaimer(loan_obj.loan_id)}'''}, status=status.HTTP_200_OK)
         
         except Loan.DoesNotExist:
             return Response({'message': f'''No unconfirmed loan found! Please ensure that the lender has used the `$loan` command and the comment has been responded
@@ -189,11 +196,11 @@ class ConfirmLoanWithIDView(APIView):
             loan_obj.is_confirmed = True
             loan_obj.save()
             if loan_obj.borrower.username == author_obj.username:
-                return Response({'message': f'''I have noted that down! \n\n u/{loan_obj.borrower.username} has confirmed that they have received {loan_obj.amount} {loan_obj.currency} from 
-                            u/{loan_obj.lender.username} and the loan is thus marked as confirmed. (Loan ID `{loan_obj.loan_id}`: `Confirmed`)'''}, status=status.HTTP_200_OK)
+                return Response({'message': f'''I have noted that down! \n\n u/{loan_obj.borrower.username} has confirmed that they have received {loan_obj.amount} {loan_obj.currency} from
+                            u/{loan_obj.lender.username} and the loan is thus marked as confirmed. (Loan ID `{loan_obj.loan_id}`: `Confirmed`){get_loan_url_disclaimer(loan_obj.loan_id)}'''}, status=status.HTTP_200_OK)
             elif author_obj.is_mod:
-                return Response({'message': f'''**Moderator Command** \n\n I have noted that down! \n\n The moderator u/{author_obj.username} has confirmed that u/{loan_obj.borrower.username} has received {loan_obj.amount} {loan_obj.currency} from 
-                            u/{loan_obj.lender.username} and the loan is thus marked as confirmed. (Loan ID `{loan_obj.loan_id}`: `Confirmed`)'''}, status=status.HTTP_200_OK)
+                return Response({'message': f'''**Moderator Command** \n\n I have noted that down! \n\n The moderator u/{author_obj.username} has confirmed that u/{loan_obj.borrower.username} has received {loan_obj.amount} {loan_obj.currency} from
+                            u/{loan_obj.lender.username} and the loan is thus marked as confirmed. (Loan ID `{loan_obj.loan_id}`: `Confirmed`){get_loan_url_disclaimer(loan_obj.loan_id)}'''}, status=status.HTTP_200_OK)
         except Loan.DoesNotExist:
             return Response({'message': f'''No active loan found! Please ensure that the lender has used the `$loan` command and the comment has been responded
                               to by the bot.\n\n If the loan was cancelled/refunded previously, request the lender to use the `$loan` command again'''}, status=status.HTTP_200_OK)
@@ -254,8 +261,8 @@ class PayLoanByThreadView(APIView):
             borrower_obj.borrower_repayment_total += loan_obj.amount_in_usd
             borrower_obj.save()
 
-            return Response({'message': f'''That's sweet! I will note that down. \n\n u/{loan_obj.lender.username} has confirmed that they have received {amount} {currency} from 
-                            u/{loan_obj.borrower.username} and the loan is thus marked as paid. (Loan ID `{loan_obj.loan_id}`: `Paid`) (Payment Record ID `{payment_obj.payment_id_display}`)'''}, status=status.HTTP_200_OK)
+            return Response({'message': f'''That's sweet! I will note that down. \n\n u/{loan_obj.lender.username} has confirmed that they have received {amount} {currency} from
+                            u/{loan_obj.borrower.username} and the loan is thus marked as paid. (Loan ID `{loan_obj.loan_id}`: `Paid`) (Payment Record ID `{payment_obj.payment_id_display}`){get_loan_url_disclaimer(loan_obj.loan_id)}'''}, status=status.HTTP_200_OK)
         
         except Loan.DoesNotExist:
             return Response({'message': 
@@ -323,11 +330,11 @@ class PayLoanWithIDView(APIView):
             borrower_obj.save()
 
             if loan_obj.lender.username == author_obj.username:
-                return Response({'message': f'''That's sweet! I will note that down. \n\n u/{loan_obj.lender.username} has confirmed that they have received {amount} {currency} 
-                            from u/{loan_obj.borrower.username} and the loan is thus marked as paid. (Loan ID `{loan_obj.loan_id}`: `Paid`) (Payment Record ID `{payment_obj.payment_id_display}`)'''}, status=status.HTTP_200_OK)
+                return Response({'message': f'''That's sweet! I will note that down. \n\n u/{loan_obj.lender.username} has confirmed that they have received {amount} {currency}
+                            from u/{loan_obj.borrower.username} and the loan is thus marked as paid. (Loan ID `{loan_obj.loan_id}`: `Paid`) (Payment Record ID `{payment_obj.payment_id_display}`){get_loan_url_disclaimer(loan_obj.loan_id)}'''}, status=status.HTTP_200_OK)
             elif author_obj.is_mod:
-                return Response({'message': f'''**Moderator Command** \n\n That's sweet! I will note that down. \n\n The moderator u/{author_obj.username} has confirmed that u/{loan_obj.lender.username} has received {amount} {currency} 
-                            from u/{loan_obj.borrower.username} and the loan is thus marked as paid. (Loan ID `{loan_obj.loan_id}`: `Paid`) (Payment Record ID `{payment_obj.payment_id_display}`)'''}, status=status.HTTP_200_OK)
+                return Response({'message': f'''**Moderator Command** \n\n That's sweet! I will note that down. \n\n The moderator u/{author_obj.username} has confirmed that u/{loan_obj.lender.username} has received {amount} {currency}
+                            from u/{loan_obj.borrower.username} and the loan is thus marked as paid. (Loan ID `{loan_obj.loan_id}`: `Paid`) (Payment Record ID `{payment_obj.payment_id_display}`){get_loan_url_disclaimer(loan_obj.loan_id)}'''}, status=status.HTTP_200_OK)
     
         except Loan.DoesNotExist:
             return Response({'message': f'''No active loan found! Please ensure that the `$loan` command was used and the comment has been responded
@@ -368,8 +375,8 @@ class UnpaidLoanByThreadView(APIView):
             lender_obj.lender_unpaid_loan_count += 1
             lender_obj.save()
 
-            return Response({'message': f'''That's unfortunate! \n\n u/{loan_obj.lender.username} has confirmed that they have not received a repayment for the [loan]({loan_obj}) from 
-                            u/{loan_obj.borrower.username} and the loan is thus marked as unpaid. \n\n The mods will be notified automatically! (Loan ID `{loan_obj.loan_id}`: `Unpaid`)'''}, status=status.HTTP_200_OK)
+            return Response({'message': f'''That's unfortunate! \n\n u/{loan_obj.lender.username} has confirmed that they have not received a repayment for the [loan]({loan_obj}) from
+                            u/{loan_obj.borrower.username} and the loan is thus marked as unpaid. \n\n The mods will be notified automatically! (Loan ID `{loan_obj.loan_id}`: `Unpaid`){get_loan_url_disclaimer(loan_obj.loan_id)}'''}, status=status.HTTP_200_OK)
         
         except Loan.DoesNotExist:
             return Response({'message': f'''No active loan found! Please ensure that the lender has used the `$loan` command and the comment has been responded
@@ -414,11 +421,11 @@ class UnpaidLoanWithIDView(APIView):
             lender_obj.save()
 
             if loan_obj.lender.username == author_obj.username:
-                return Response({'message': f'''That's unfortunate! \n\n u/{loan_obj.lender.username} has confirmed that they have not received a repayment for the [loan]({loan_obj}) from 
-                            u/{loan_obj.borrower.username} and the loan is thus marked as unpaid. \n\n The mods will be notified automatically! (Loan ID `{loan_obj.loan_id}`: `Unpaid`)'''}, status=status.HTTP_200_OK)
+                return Response({'message': f'''That's unfortunate! \n\n u/{loan_obj.lender.username} has confirmed that they have not received a repayment for the [loan]({loan_obj}) from
+                            u/{loan_obj.borrower.username} and the loan is thus marked as unpaid. \n\n The mods will be notified automatically! (Loan ID `{loan_obj.loan_id}`: `Unpaid`){get_loan_url_disclaimer(loan_obj.loan_id)}'''}, status=status.HTTP_200_OK)
             elif author_obj.is_mod:
-                return Response({'message': f'''**Moderator Command** \n\n That's unfortunate! \n\n The moderator u/{author_obj.username} has confirmed that u/{loan_obj.lender.username} has not received a repayment for the `loan {loan_obj.loan_id})` from 
-                            u/{loan_obj.borrower.username} and the loan is thus marked as unpaid. \n\n (Loan ID `{loan_obj.loan_id}`: `Unpaid`)'''}, status=status.HTTP_200_OK)
+                return Response({'message': f'''**Moderator Command** \n\n That's unfortunate! \n\n The moderator u/{author_obj.username} has confirmed that u/{loan_obj.lender.username} has not received a repayment for the `loan {loan_obj.loan_id})` from
+                            u/{loan_obj.borrower.username} and the loan is thus marked as unpaid. \n\n (Loan ID `{loan_obj.loan_id}`: `Unpaid`){get_loan_url_disclaimer(loan_obj.loan_id)}'''}, status=status.HTTP_200_OK)
         
         except Loan.DoesNotExist:
             return Response({'message': f'''No active loan found! Please ensure that the `$loan` command was used and the comment has been responded
@@ -541,6 +548,10 @@ The user has a total of `{user_obj.lender_unpaid_loan_count}` unpaid loan(s), fo
 \n\n
 Here are the details of the last 5 loans for the user: \n\n
 {markdown_table}
+
+---
+
+*View the most updated version of u/{user_obj.username}'s loans at: https://simpleloans.live/user/{user_obj.username}/*
 '''}, status=status.HTTP_200_OK)
         
         except RedditUser.DoesNotExist:
@@ -582,10 +593,10 @@ class CancelLoanByThreadView(APIView):
             borrower_obj.borrower_pending_loan_count -= 1
             borrower_obj.save()
 
-            return Response({'message': 
-                             f'''I have noted that down! \n\n u/{loan_obj.borrower.username} has cancelled their loan of {loan_obj.amount} {loan_obj.currency} from 
+            return Response({'message':
+                             f'''I have noted that down! \n\n u/{loan_obj.borrower.username} has cancelled their loan of {loan_obj.amount} {loan_obj.currency} from
 u/{loan_obj.lender.username} and the loan is thus marked as cancelled. (Loan ID `{loan_obj.loan_id}`: `Cancelled`) \n\n
-**Note**: No further actions will work on this loan (this loan cannot be marked as paid/unpaid/confirmed). If this loan is reinstated, please use the `$loan` command again.
+**Note**: No further actions will work on this loan (this loan cannot be marked as paid/unpaid/confirmed). If this loan is reinstated, please use the `$loan` command again.{get_loan_url_disclaimer(loan_obj.loan_id)}
 '''}, status=status.HTTP_200_OK)
 
         except Loan.DoesNotExist:
@@ -627,18 +638,18 @@ class CancelLoanWithIDView(APIView):
             borrower_obj.borrower_pending_loan_balance -= loan_obj.amount_in_usd
             borrower_obj.borrower_pending_loan_count -= 1
             borrower_obj.save()
-            
+
             if loan_obj.lender.username == author_obj.username:
-                return Response({'message': 
-f'''I have noted that down! \n\n u/{loan_obj.lender.username} has cancelled their loan of {loan_obj.amount} {loan_obj.currency} with 
+                return Response({'message':
+f'''I have noted that down! \n\n u/{loan_obj.lender.username} has cancelled their loan of {loan_obj.amount} {loan_obj.currency} with
 u/{loan_obj.borrower.username} and the loan is thus marked as cancelled. (Loan ID `{loan_obj.loan_id}`: `Cancelled`) \n\n
-**Note**: No further actions will work on this loan (this loan cannot be marked as paid/unpaid/confirmed). If this loan is reinstated, please use the `$loan` command again.
+**Note**: No further actions will work on this loan (this loan cannot be marked as paid/unpaid/confirmed). If this loan is reinstated, please use the `$loan` command again.{get_loan_url_disclaimer(loan_obj.loan_id)}
 '''}, status=status.HTTP_200_OK)
             elif author_obj.is_mod:
                 return Response({'message':
 f'''**Moderator Command** \n\n I have noted that down! \n\n The moderator u/{author_obj.username} has cancelled the loan between the lender u/{loan_obj.lender.username} and the borrower
 u/{loan_obj.borrower.username} for the amount of {loan_obj.amount} {loan_obj.currency} and the loan is thus marked as cancelled. (Loan ID `{loan_obj.loan_id}`: `Cancelled`) \n\n
-**Note**: No further actions will work on this loan (this loan cannot be marked as paid/unpaid/confirmed). If this loan is reinstated, please use the `$loan` command again.
+**Note**: No further actions will work on this loan (this loan cannot be marked as paid/unpaid/confirmed). If this loan is reinstated, please use the `$loan` command again.{get_loan_url_disclaimer(loan_obj.loan_id)}
 '''}, status=status.HTTP_200_OK)
         except Loan.DoesNotExist:
             return Response({'message': f'''No existing loan found! Please ensure that the lender has used the `$loan` command and the comment has been responded
@@ -701,7 +712,7 @@ class CancelPaymentView(APIView):
             payment.is_cancelled = True
             payment.save()
 
-            return Response({'message': f'Payment ID `{payment.payment_id_display}` has been successfully canceled and the payment marker towards Loan ID `{loan_obj.loan_id}` for `{payment.amount} {payment.currency}` has been removed.'}, status=status.HTTP_200_OK)
+            return Response({'message': f'Payment ID `{payment.payment_id_display}` has been successfully canceled and the payment marker towards Loan ID `{loan_obj.loan_id}` for `{payment.amount} {payment.currency}` has been removed.{get_loan_url_disclaimer(loan_obj.loan_id)}'}, status=status.HTTP_200_OK)
 
         except Payment.DoesNotExist:
             return Response({'message': 'No active payment found with this ID.'}, status=status.HTTP_400_BAD_REQUEST)

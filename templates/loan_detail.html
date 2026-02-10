@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan #{{ loan.loan_id }} - SimpleLoans</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            min-height: 100vh;
+        }
+
+        .navbar-custom {
+            background: #000;
+            border-bottom: 1px solid #333;
+            padding: 1rem 0;
+        }
+
+        .navbar-brand {
+            color: #fff !important;
+            font-weight: 600;
+            font-size: 1.25rem;
+        }
+
+        .nav-link {
+            color: #888 !important;
+            font-weight: 500;
+            transition: color 0.2s;
+            margin: 0 0.5rem;
+        }
+
+        .nav-link:hover {
+            color: #fff !important;
+        }
+
+        .container {
+            max-width: 900px;
+            margin-top: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .back-link {
+            color: #888;
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+            display: inline-block;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: #fff;
+        }
+
+        .loan-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .loan-id {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .loan-amount {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .status-badges {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-paid {
+            background: rgba(46, 160, 67, 0.1);
+            color: #3dd68c;
+            border: 1px solid rgba(61, 214, 140, 0.3);
+        }
+
+        .status-unpaid {
+            background: rgba(229, 62, 62, 0.1);
+            color: #f5455c;
+            border: 1px solid rgba(245, 69, 92, 0.3);
+        }
+
+        .status-pending {
+            background: rgba(234, 179, 8, 0.1);
+            color: #f5a524;
+            border: 1px solid rgba(245, 165, 36, 0.3);
+        }
+
+        .status-cancelled {
+            background: rgba(136, 136, 136, 0.1);
+            color: #888;
+            border: 1px solid rgba(136, 136, 136, 0.3);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-card {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .info-label {
+            color: #666;
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-value {
+            color: #fff;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .info-value a {
+            color: #fff;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .info-value a:hover {
+            color: #888;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #fff;
+        }
+
+        .payment-card {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .payment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .payment-id {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .payment-amount {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .payment-date {
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-cash-coin"></i> SimpleLoans
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Loans</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/user/">Users</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <a href="/" class="back-link"><i class="bi bi-arrow-left"></i> Back to Loans</a>
+
+        <!-- Loan Header -->
+        <div class="loan-header">
+            <div class="loan-id">Loan #{{ loan.loan_id }}</div>
+            <div class="loan-amount">{{ loan.amount }} {{ loan.currency }}</div>
+            <div class="status-badges">
+                {% if loan.is_paid %}
+                    <span class="status-badge status-paid"><i class="bi bi-check-circle"></i> Paid</span>
+                {% elif loan.is_unpaid %}
+                    <span class="status-badge status-unpaid"><i class="bi bi-x-circle"></i> Unpaid</span>
+                {% elif loan.is_cancelled %}
+                    <span class="status-badge status-cancelled"><i class="bi bi-slash-circle"></i> Cancelled</span>
+                {% else %}
+                    <span class="status-badge status-pending"><i class="bi bi-clock"></i> Pending</span>
+                {% endif %}
+                {% if loan.is_confirmed %}
+                    <span class="status-badge status-paid"><i class="bi bi-patch-check"></i> Confirmed</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Info Grid -->
+        <div class="info-grid">
+            <div class="info-card">
+                <div class="info-label"><i class="bi bi-person-up"></i> Lender</div>
+                <div class="info-value">
+                    <a href="/user/{{ loan.lender.username }}/">{{ loan.lender.username }}</a>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-label"><i class="bi bi-person-down"></i> Borrower</div>
+                <div class="info-value">
+                    <a href="/user/{{ loan.borrower.username }}/">{{ loan.borrower.username }}</a>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-label"><i class="bi bi-currency-dollar"></i> Amount (USD)</div>
+                <div class="info-value">${{ loan.amount_in_usd }}</div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-label"><i class="bi bi-calendar"></i> Created</div>
+                <div class="info-value">{{ loan.creation_date|date:"M d, Y" }}</div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-label"><i class="bi bi-reddit"></i> Original Thread</div>
+                <div class="info-value">
+                    {% if loan.original_thread %}
+                        <a href="{{ loan.original_thread }}" target="_blank">
+                            View <i class="bi bi-box-arrow-up-right"></i>
+                        </a>
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-label"><i class="bi bi-hash"></i> Comment ID</div>
+                <div class="info-value">{{ loan.comment_id }}</div>
+            </div>
+        </div>
+
+        <!-- Payments Section -->
+        {% if payments %}
+        <div class="section-title"><i class="bi bi-cash-stack"></i> Payment History</div>
+        {% for payment in payments %}
+        <div class="payment-card">
+            <div class="payment-header">
+                <div>
+                    <div class="payment-id">Payment ID: {{ payment.payment_id_display }}</div>
+                    <div class="payment-amount">{{ payment.amount }} {{ payment.currency }}</div>
+                </div>
+                <div class="payment-date">{{ payment.payment_date|date:"M d, Y" }}</div>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="section-title"><i class="bi bi-cash-stack"></i> Payment History</div>
+        <div class="empty-state">
+            <i class="bi bi-inbox" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
+            <p>No payments recorded</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

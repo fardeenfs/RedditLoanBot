@@ -34,7 +34,7 @@ from loanmanager.api import (
 )
 from rest_framework_simplejwt import views as jwt_views
 
-from loanmanager.views import loan_list, reddit_user_detail, search_users
+from loanmanager.views import loan_list, reddit_user_detail, search_users, loan_detail
 
 
 
@@ -45,6 +45,7 @@ router.register('payments', PaymentViewSet)
 
 urlpatterns = [
     path('', loan_list, name='loan-list'),
+    path('loan/<int:loan_id>/', loan_detail, name='loan-detail'),
     path('user/', search_users, name='search_users'),
     path('user/<str:username>/', reddit_user_detail, name='reddit_user_detail'),
     # The API URLs are now determined automatically by the router.

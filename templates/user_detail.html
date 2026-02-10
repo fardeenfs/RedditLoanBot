@@ -1,250 +1,449 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>{{ user.username }} – Loan Info</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body {
-      background-color: #f8f9fa;
-    }
-    .container {
-      margin-top: 40px;
-    }
-    .card {
-      margin-bottom: 30px;
-    }
-    .custom-green {
-      background-color: #5eff83 !important;
-    }
-    .custom-red {
-      background-color: #ffb6bd !important;
-    }
-    .custom-yellow {
-      background-color: #ffe598 !important;
-    }
-    .custom-grey {
-      background-color: #d2d2d2 !important;
-    }
-    .pagination {
-      justify-content: center;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ user.username }} - SimpleLoans</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    .table {
-      width: 100%;
-      border-collapse: collapse;
-      table-layout: auto;
-    }
+        body {
+            background: #000;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            min-height: 100vh;
+        }
 
-    .table th, .table td {
-        word-wrap: break-word;
-        overflow: hidden;
-    }
+        .navbar-custom {
+            background: #000;
+            border-bottom: 1px solid #333;
+            padding: 1rem 0;
+        }
 
-    .table th:nth-child(1), .table td:nth-child(1) { 
-        width: 15%;
-    }
-    .table th:nth-child(2), .table td:nth-child(2) { 
-        width: 15%;
-    }
-    .table th:nth-child(3), .table td:nth-child(3) { 
-        width: 10%;
-    }
-    .table th:nth-child(4), .table td:nth-child(4) { 
-        width: 10%;
-    }
-    .table th:nth-child(5), .table td:nth-child(5) { 
-        width: 10%;
-    }
-    .table th:nth-child(6), .table td:nth-child(6) { 
-        width: 20%;
-    }
+        .navbar-brand {
+            color: #fff !important;
+            font-weight: 600;
+            font-size: 1.25rem;
+        }
 
+        .nav-link {
+            color: #888 !important;
+            font-weight: 500;
+            transition: color 0.2s;
+            margin: 0 0.5rem;
+        }
 
+        .nav-link:hover {
+            color: #fff !important;
+        }
 
+        .container {
+            max-width: 1100px;
+            margin-top: 3rem;
+            margin-bottom: 3rem;
+        }
 
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
 
-    .table th, .table td {
-        text-overflow: ellipsis;
-        max-width: 200px;
-    }
+        .page-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
 
-  </style>
+        .page-header p {
+            color: #888;
+            font-size: 1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .stat-card h3 {
+            font-size: 0.9rem;
+            color: #888;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #222;
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .stat-value {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #fff;
+        }
+
+        .loan-table {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 3rem;
+        }
+
+        .loan-row {
+            display: grid;
+            grid-template-columns: 100px 150px 150px 100px 120px 100px;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #222;
+            text-decoration: none;
+            color: inherit;
+            transition: background 0.2s;
+        }
+
+        .loan-row:hover {
+            background: #161616;
+        }
+
+        .loan-row:last-child {
+            border-bottom: none;
+        }
+
+        .table-header {
+            background: #000;
+            font-weight: 600;
+            color: #888;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .table-header:hover {
+            background: #000;
+        }
+
+        .loan-cell {
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+
+        .loan-id {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-paid {
+            background: rgba(46, 160, 67, 0.1);
+            color: #3dd68c;
+            border: 1px solid rgba(61, 214, 140, 0.3);
+        }
+
+        .status-unpaid {
+            background: rgba(229, 62, 62, 0.1);
+            color: #f5455c;
+            border: 1px solid rgba(245, 69, 92, 0.3);
+        }
+
+        .status-pending {
+            background: rgba(234, 179, 8, 0.1);
+            color: #f5a524;
+            border: 1px solid rgba(245, 165, 36, 0.3);
+        }
+
+        .status-cancelled {
+            background: rgba(136, 136, 136, 0.1);
+            color: #888;
+            border: 1px solid rgba(136, 136, 136, 0.3);
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .pagination a, .pagination span {
+            color: #888;
+            text-decoration: none;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .pagination a:hover {
+            background: #111;
+            color: #fff;
+        }
+
+        .pagination .active {
+            background: #fff;
+            color: #000;
+            font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+            background: #111;
+            border-radius: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .loan-row {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+
+            .loan-cell::before {
+                content: attr(data-label);
+                color: #666;
+                margin-right: 0.5rem;
+            }
+
+            .table-header {
+                display: none;
+            }
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3 py-1">
-        <div class="container-fluid">
-            <div class="d-flex flex-column">
-                <a class="navbar-brand fw-bold mb-0 text-white" href="#">SimpleLoans</a>
-            </div>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-cash-coin"></i> SimpleLoans
+            </a>
 
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
-                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
             <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link text-white {% if request.path == '/' %}active{% endif %}" href="/">Loan Search</a>
+                        <a class="nav-link" href="/">Loans</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-white {% if request.path == '/user/' %}active{% endif %}" href="/user/">User Search</a>
+                        <a class="nav-link" href="/user/">Users</a>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
-  <div class="container">
-        <div class="row mb-4">
-            <div class="col-md-8 offset-md-2">
-                <h1 class="text-center"> Results for profile - <i>{{ user.username }}</i></h1>
-                <h6 class="text-center">As recorded by u/simpleloans_bot on r/SimpleLoans</h6><hr>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="page-header">
+            <h1><i class="bi bi-person-circle"></i> {{ user.username }}</h1>
+            <p>User statistics and loan history</p>
         </div>
-    </div>
 
-    <div class="row mb-4">
-      <div class="col-md-6">
-        <div class="card shadow-sm">
-          <div class="card-header bg-primary text-white">
-            <strong>Borrower Stats (In USD)</strong>
-          </div>
-          <div class="card-body">
-            <ul class="list-group list-group-flush">
-              <li class="list-group-item"><strong>Pending Loans Total:</strong> ${{ user.borrower_pending_loan_balance }}</li>
-              <li class="list-group-item"><strong>Completed Loans Total:</strong> ${{ user.borrower_completed_loan_balance }}</li>
-              <li class="list-group-item"><strong>Total Repayment:</strong> ${{ user.borrower_repayment_total }}</li>
-            </ul>
-          </div>
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3><i class="bi bi-arrow-down-circle"></i> BORROWER STATS</h3>
+                <div class="stat-item">
+                    <span class="stat-label">Pending Loans</span>
+                    <span class="stat-value">${{ user.borrower_pending_loan_balance }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Completed Loans</span>
+                    <span class="stat-value">${{ user.borrower_completed_loan_balance }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Total Repayment</span>
+                    <span class="stat-value">${{ user.borrower_repayment_total }}</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <h3><i class="bi bi-arrow-up-circle"></i> LENDER STATS</h3>
+                <div class="stat-item">
+                    <span class="stat-label">Pending Loans</span>
+                    <span class="stat-value">${{ user.lender_pending_loan_balance }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Completed Loans</span>
+                    <span class="stat-value">${{ user.lender_completed_loan_balance }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Unpaid Loans</span>
+                    <span class="stat-value">${{ user.lender_unpaid_loan_balance }}</span>
+                </div>
+            </div>
         </div>
-      </div>
-      <div class="col-md-6">
-        <div class="card shadow-sm">
-          <div class="card-header bg-success text-white">
-            <strong>Lender Stats (In USD)</strong>
-          </div>
-          <div class="card-body">
-            <ul class="list-group list-group-flush">
-              <li class="list-group-item"><strong>Pending Loans Total:</strong> ${{ user.lender_pending_loan_balance }}</li>
-              <li class="list-group-item"><strong>Completed Loans Total:</strong> ${{ user.lender_completed_loan_balance }}</li>
-              <li class="list-group-item"><strong>Unpaid Loans Total:</strong> ${{ user.lender_unpaid_loan_balance }}</li>
-            </ul>
-          </div>
+
+        <!-- Borrowed Loans -->
+        <div class="section-title">Loans Taken (Borrower)</div>
+        <div class="loan-table">
+            <div class="loan-row table-header">
+                <div class="loan-cell">Loan ID</div>
+                <div class="loan-cell">Lender</div>
+                <div class="loan-cell">Amount</div>
+                <div class="loan-cell">Status</div>
+                <div class="loan-cell">Created</div>
+                <div class="loan-cell">Thread</div>
+            </div>
+            {% for loan in borrowed_loans %}
+            <a href="/loan/{{ loan.loan_id }}/" class="loan-row">
+                <div class="loan-cell loan-id" data-label="Loan ID:">#{{ loan.loan_id }}</div>
+                <div class="loan-cell" data-label="Lender:">{{ loan.lender.username }}</div>
+                <div class="loan-cell" data-label="Amount:">{{ loan.amount }} {{ loan.currency }}</div>
+                <div class="loan-cell" data-label="Status:">
+                    {% if loan.is_paid %}
+                        <span class="status-badge status-paid">Paid</span>
+                    {% elif loan.is_unpaid %}
+                        <span class="status-badge status-unpaid">Unpaid</span>
+                    {% elif loan.is_cancelled %}
+                        <span class="status-badge status-cancelled">Cancelled</span>
+                    {% else %}
+                        <span class="status-badge status-pending">Pending</span>
+                    {% endif %}
+                </div>
+                <div class="loan-cell" data-label="Created:">{{ loan.creation_date|date:"M d, Y" }}</div>
+                <div class="loan-cell" data-label="Thread:">
+                    {% if loan.original_thread %}
+                        <i class="bi bi-reddit"></i>
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </div>
+            </a>
+            {% empty %}
+            <div class="empty-state">
+                <i class="bi bi-inbox" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
+                <p>No loans taken</p>
+            </div>
+            {% endfor %}
         </div>
-      </div>
+
+        {% if borrowed_loans.has_previous or borrowed_loans.has_next %}
+        <div class="pagination">
+            {% if borrowed_loans.has_previous %}
+                <a href="?borrowed_page={{ borrowed_loans.previous_page_number }}&lent_page={{ lent_loans.number }}">
+                    <i class="bi bi-chevron-left"></i> Previous
+                </a>
+            {% endif %}
+            <span class="active">Page {{ borrowed_loans.number }} of {{ borrowed_loans.paginator.num_pages }}</span>
+            {% if borrowed_loans.has_next %}
+                <a href="?borrowed_page={{ borrowed_loans.next_page_number }}&lent_page={{ lent_loans.number }}">
+                    Next <i class="bi bi-chevron-right"></i>
+                </a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Lent Loans -->
+        <div class="section-title" style="margin-top: 3rem;">Loans Given (Lender)</div>
+        <div class="loan-table">
+            <div class="loan-row table-header">
+                <div class="loan-cell">Loan ID</div>
+                <div class="loan-cell">Borrower</div>
+                <div class="loan-cell">Amount</div>
+                <div class="loan-cell">Status</div>
+                <div class="loan-cell">Created</div>
+                <div class="loan-cell">Thread</div>
+            </div>
+            {% for loan in lent_loans %}
+            <a href="/loan/{{ loan.loan_id }}/" class="loan-row">
+                <div class="loan-cell loan-id" data-label="Loan ID:">#{{ loan.loan_id }}</div>
+                <div class="loan-cell" data-label="Borrower:">{{ loan.borrower.username }}</div>
+                <div class="loan-cell" data-label="Amount:">{{ loan.amount }} {{ loan.currency }}</div>
+                <div class="loan-cell" data-label="Status:">
+                    {% if loan.is_paid %}
+                        <span class="status-badge status-paid">Paid</span>
+                    {% elif loan.is_unpaid %}
+                        <span class="status-badge status-unpaid">Unpaid</span>
+                    {% elif loan.is_cancelled %}
+                        <span class="status-badge status-cancelled">Cancelled</span>
+                    {% else %}
+                        <span class="status-badge status-pending">Pending</span>
+                    {% endif %}
+                </div>
+                <div class="loan-cell" data-label="Created:">{{ loan.creation_date|date:"M d, Y" }}</div>
+                <div class="loan-cell" data-label="Thread:">
+                    {% if loan.original_thread %}
+                        <i class="bi bi-reddit"></i>
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </div>
+            </a>
+            {% empty %}
+            <div class="empty-state">
+                <i class="bi bi-inbox" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
+                <p>No loans given</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if lent_loans.has_previous or lent_loans.has_next %}
+        <div class="pagination">
+            {% if lent_loans.has_previous %}
+                <a href="?lent_page={{ lent_loans.previous_page_number }}&borrowed_page={{ borrowed_loans.number }}">
+                    <i class="bi bi-chevron-left"></i> Previous
+                </a>
+            {% endif %}
+            <span class="active">Page {{ lent_loans.number }} of {{ lent_loans.paginator.num_pages }}</span>
+            {% if lent_loans.has_next %}
+                <a href="?lent_page={{ lent_loans.next_page_number }}&borrowed_page={{ borrowed_loans.number }}">
+                    Next <i class="bi bi-chevron-right"></i>
+                </a>
+            {% endif %}
+        </div>
+        {% endif %}
     </div>
 
-    <hr>
-
-    <h3 class="mb-3">Loans Taken (as Borrower)</h3>
-    <div class="table-responsive mb-3">
-      <table class="table table-bordered table-hover bg-white shadow-sm">
-        <thead class="table-light">
-          <tr>
-            <th>Lender</th>
-            <th>Borrower</th>
-            <th>Amount</th>
-            <th>Currency</th>
-            <th>Status</th>
-            <th>Created</th>
-            <th>Original Thread</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for loan in borrowed_loans %}
-          <tr class="{% if loan.is_paid %}custom-green
-           {% elif loan.is_unpaid %}custom-red
-           {% elif loan.is_cancelled %}custom-grey
-           {% else %}custom-yellow{% endif %}">
-            <td>{{ loan.lender.username }}</td>
-            <td>{{ loan.borrower.username }}</td>
-            <td>{{ loan.amount }}</td>
-            <td>{{ loan.currency }}</td>
-            <td>
-              {% if loan.is_paid %}Paid{% elif loan.is_unpaid %}Unpaid{% elif loan.is_cancelled %}Cancelled{% else %}Pending{% endif %}
-            </td>
-            <td>{{ loan.creation_date }}</td>
-            <td><a href="{{ loan.original_thread }}" target="_blank" class="text-decoration-none">View Thread</a></td>
-          </tr>
-          {% empty %}
-          <tr><td colspan="7" class="text-center text-muted">No loans taken.</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-
-    <nav aria-label="Borrower loan pagination">
-      <ul class="pagination">
-        {% if borrowed_loans.has_previous %}
-          <li class="page-item"><a class="page-link" href="?borrowed_page=1&lent_page={{ lent_loans.number }}">« First</a></li>
-          <li class="page-item"><a class="page-link" href="?borrowed_page={{ borrowed_loans.previous_page_number }}&lent_page={{ lent_loans.number }}">‹ Prev</a></li>
-        {% endif %}
-        <li class="page-item disabled"><span class="page-link">Page {{ borrowed_loans.number }} of {{ borrowed_loans.paginator.num_pages }}</span></li>
-        {% if borrowed_loans.has_next %}
-          <li class="page-item"><a class="page-link" href="?borrowed_page={{ borrowed_loans.next_page_number }}&lent_page={{ lent_loans.number }}">Next ›</a></li>
-          <li class="page-item"><a class="page-link" href="?borrowed_page={{ borrowed_loans.paginator.num_pages }}&lent_page={{ lent_loans.number }}">Last »</a></li>
-        {% endif %}
-      </ul>
-    </nav>
-
-    <h3 class="mt-5 mb-3">Loans Given (as Lender)</h3>
-    <div class="table-responsive mb-3">
-      <table class="table table-bordered table-hover bg-white shadow-sm">
-        <thead class="table-light">
-          <tr>
-            <th>Lender</th>
-            <th>Borrower</th>
-            <th>Amount</th>
-            <th>Currency</th>
-            <th>Status</th>
-            <th>Created</th>
-            <th>Original Thread</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for loan in lent_loans %}
-          <tr class="{% if loan.is_paid %}custom-green
-           {% elif loan.is_unpaid %}custom-red
-           {% elif loan.is_cancelled %}custom-grey
-           {% else %}custom-yellow{% endif %}">
-
-            <td>{{ loan.lender.username }}</td>
-            <td>{{ loan.borrower.username }}</td>
-            <td>{{ loan.amount }}</td>
-            <td>{{ loan.currency }}</td>
-            <td>
-              {% if loan.is_paid %}Paid{% elif loan.is_unpaid %}Unpaid{% elif loan.is_cancelled %}Cancelled{% else %}Pending{% endif %}
-            </td>
-            <td>{{ loan.creation_date }}</td>
-            <td><a href="{{ loan.original_thread }}" target="_blank" class="text-decoration-none">View Thread</a></td>
-          </tr>
-          {% empty %}
-          <tr><td colspan="7" class="text-center text-muted">No loans given.</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-
-    <nav aria-label="Lender loan pagination">
-      <ul class="pagination">
-        {% if lent_loans.has_previous %}
-          <li class="page-item"><a class="page-link" href="?lent_page=1&borrowed_page={{ borrowed_loans.number }}">« First</a></li>
-          <li class="page-item"><a class="page-link" href="?lent_page={{ lent_loans.previous_page_number }}&borrowed_page={{ borrowed_loans.number }}">‹ Prev</a></li>
-        {% endif %}
-        <li class="page-item disabled"><span class="page-link">Page {{ lent_loans.number }} of {{ lent_loans.paginator.num_pages }}</span></li>
-        {% if lent_loans.has_next %}
-          <li class="page-item"><a class="page-link" href="?lent_page={{ lent_loans.next_page_number }}&borrowed_page={{ borrowed_loans.number }}">Next ›</a></li>
-          <li class="page-item"><a class="page-link" href="?lent_page={{ lent_loans.paginator.num_pages }}&borrowed_page={{ borrowed_loans.number }}">Last »</a></li>
-        {% endif %}
-      </ul>
-    </nav>
-  </div>
-
-  <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -5,17 +5,69 @@ from django.db import models
 
 def loan_list(request):
     username = request.GET.get('username', '')
-    
+    status = request.GET.get('status', '')
+    currency = request.GET.get('currency', '')
+    min_amount = request.GET.get('min_amount', '')
+    max_amount = request.GET.get('max_amount', '')
+    start_date = request.GET.get('start_date', '')
+    end_date = request.GET.get('end_date', '')
+
     # Normalize the username by removing 'u/' or '/u/' prefix and stripping spaces
     if username.startswith('u/') or username.startswith('/u/'):
         username = username.split('/')[-1]
-    
+
     loans = Loan.objects.all()
 
     # Filter loans by username (lender or borrower) using case-insensitive partial matching
     if username:
-        loans = loans.filter(lender__username__icontains=username) | loans.filter(borrower__username__icontains=username)
-    
+        loans = loans.filter(
+            models.Q(lender__username__icontains=username) |
+            models.Q(borrower__username__icontains=username)
+        )
+
+    # Filter by status
+    if status:
+        if status == 'paid':
+            loans = loans.filter(is_paid=True)
+        elif status == 'unpaid':
+            loans = loans.filter(is_unpaid=True)
+        elif status == 'pending':
+            loans = loans.filter(is_paid=False, is_unpaid=False, is_cancelled=False)
+        elif status == 'cancelled':
+            loans = loans.filter(is_cancelled=True)
+        elif status == 'confirmed':
+            loans = loans.filter(is_confirmed=True)
+
+    # Filter by currency
+    if currency:
+        loans = loans.filter(currency__iexact=currency)
+
+    # Filter by amount range (in USD)
+    if min_amount:
+        try:
+            loans = loans.filter(amount_in_usd__gte=float(min_amount))
+        except ValueError:
+            pass
+
+    if max_amount:
+        try:
+            loans = loans.filter(amount_in_usd__lte=float(max_amount))
+        except ValueError:
+            pass
+
+    # Filter by date range
+    if start_date:
+        try:
+            loans = loans.filter(creation_date__gte=start_date)
+        except ValueError:
+            pass
+
+    if end_date:
+        try:
+            loans = loans.filter(creation_date__lte=end_date)
+        except ValueError:
+            pass
+
     # Order loans by the creation date, descending
     loans = loans.order_by('-creation_date')
 
@@ -24,16 +76,18 @@ def loan_list(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    # Add latest payment record to each loan
-    loans_with_payments = []
-    for loan in page_obj:
-        latest_payment = loan.payments.order_by('-payment_date').first()
-        loans_with_payments.append({
-            'loan': loan,
-            'latest_payment': latest_payment
-        })
-    
-    return render(request, 'loans.html', {'page_obj': page_obj})
+    context = {
+        'page_obj': page_obj,
+        'username': username,
+        'status': status,
+        'currency': currency,
+        'min_amount': min_amount,
+        'max_amount': max_amount,
+        'start_date': start_date,
+        'end_date': end_date,
+    }
+
+    return render(request, 'loans.html', context)
 
 
 def reddit_user_detail(request, username):
@@ -72,13 +126,13 @@ def search_users(request):
         # Manually calculate total_loans for each user
         for user in users:
             user.total_loans = (
-                user.borrower_pending_loan_count + 
-                user.borrower_completed_loan_count + 
-                user.lender_pending_loan_count + 
+                user.borrower_pending_loan_count +
+                user.borrower_completed_loan_count +
+                user.lender_pending_loan_count +
                 user.lender_completed_loan_count
             )
             user.pending_loans = (
-                user.borrower_pending_loan_count + 
+                user.borrower_pending_loan_count +
                 user.lender_pending_loan_count
             )
             user.completed_loans = (
@@ -97,4 +151,15 @@ def search_users(request):
     }
 
     return render(request, 'search.html', context)
+
+
+def loan_detail(request, loan_id):
+    loan = get_object_or_404(Loan, loan_id=loan_id)
+    payments = loan.payments.filter(is_cancelled=False).order_by('-payment_date')
+
+    context = {
+        'loan': loan,
+        'payments': payments,
+    }
+    return render(request, 'loan_detail.html', context)
 
