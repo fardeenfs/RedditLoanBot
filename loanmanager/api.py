@@ -13,9 +13,10 @@ from rest_framework.response import Response
 from rest_framework import serializers
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 
-def get_loan_url_disclaimer(loan_obj):
+def get_loan_url_disclaimer(loan_or_id):
     """Generate a disclaimer with the loan URL on simpleloans.live"""
-    return f"\n\n---\n\n*View the most updated version of this loan at: https://simpleloans.live/loan/{loan_obj.loan_id}/*"
+    loan_id = loan_or_id.loan_id if hasattr(loan_or_id, 'loan_id') else loan_or_id
+    return f"\n\n---\n\n*View the most updated version of this loan at: https://simpleloans.live/loan/{loan_id}/*"
 
 def check_if_comment_has_been_replied_to(comment_id):
     # Check if comment has been replied to
