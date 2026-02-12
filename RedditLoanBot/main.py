@@ -367,9 +367,16 @@ def send_to_backend(url, data, comment):
     token = get_token()
     headers = {'Authorization': f'Bearer {token}'}
     response = requests.post(url, data=data, headers=headers)
-    print(response.json())
+
+    try:
+        response_data = response.json()
+        print(response_data)
+    except Exception:
+        print(f"Error: API returned non-JSON response (status {response.status_code})")
+        return response.status_code
+
     if response.status_code in [200, 201]:
-        reply_message = response.json()['message']
+        reply_message = response_data['message']
         try:
             comment.reply(reply_message)
             print(f"Replied with: {reply_message}")
@@ -381,22 +388,28 @@ def send_to_backend(url, data, comment):
         # Token might have expired, fetch a new one
         token = get_token()
         headers = {'Authorization': f'Token {token}'}
-        
+
         # Retry the request with the new token
         response = requests.post(
-            url, 
-            data=data, 
+            url,
+            data=data,
             headers=headers
         )
-        print(response.json())
+        try:
+            response_data = response.json()
+            print(response_data)
+        except Exception:
+            print(f"Error: API returned non-JSON response on retry (status {response.status_code})")
+            return response.status_code
+
         if response.status_code in [200, 201]:
-            reply_message = response.json()['message']
+            reply_message = response_data['message']
             try:
                 comment.reply(reply_message)
                 print(f"Replied with: {reply_message}")
             except Exception as e:
                 print(f"Error in replying: {e}")
-    
+
     return response.status_code
 
 
