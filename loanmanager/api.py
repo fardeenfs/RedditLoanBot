@@ -364,8 +364,11 @@ class UnpaidLoanByThreadView(APIView):
             loan_obj = loan_obj[0]
 
             loan_obj.is_unpaid = True
-            loan_obj.borrower.has_unpaid_loan = True
             loan_obj.save()
+
+            borrower_obj = loan_obj.borrower
+            borrower_obj.has_unpaid_loan = True
+            borrower_obj.save()
 
             lender_obj = loan_obj.lender
 
@@ -376,12 +379,12 @@ class UnpaidLoanByThreadView(APIView):
             lender_obj.lender_unpaid_loan_count += 1
             lender_obj.save()
 
-            return Response({'message': f'''That's unfortunate! \n\n u/{loan_obj.lender.username} has confirmed that they have not received a repayment for the [loan]({loan_obj}) from
+            return Response({'message': f'''That's unfortunate! \n\n u/{loan_obj.lender.username} has confirmed that they have not received a repayment for the [loan](https://simpleloans.live/loan/{loan_obj.loan_id}/) from
                             u/{loan_obj.borrower.username} and the loan is thus marked as unpaid. \n\n The mods will be notified automatically! (Loan ID `{loan_obj.loan_id}`: `Unpaid`){get_loan_url_disclaimer(loan_obj.loan_id)}'''}, status=status.HTTP_200_OK)
-        
+
         except Loan.DoesNotExist:
             return Response({'message': f'''No active loan found! Please ensure that the lender has used the `$loan` command and the comment has been responded
-to by the bot. \n\n Remember only the 'lender' of the loan can mark it as unpaid.\n\n If the loan was cancelled/refunded previously, 
+to by the bot. \n\n Remember only the 'lender' of the loan can mark it as unpaid.\n\n If the loan was cancelled/refunded previously,
 request the lender to use the `$loan` command again'''}, status=status.HTTP_200_OK)
 
 
@@ -422,12 +425,14 @@ class UnpaidLoanWithIDView(APIView):
             lender_obj.save()
 
             if loan_obj.lender.username == author_obj.username:
-                return Response({'message': f'''That's unfortunate! \n\n u/{loan_obj.lender.username} has confirmed that they have not received a repayment for the [loan]({loan_obj}) from
+                return Response({'message': f'''That's unfortunate! \n\n u/{loan_obj.lender.username} has confirmed that they have not received a repayment for the [loan](https://simpleloans.live/loan/{loan_obj.loan_id}/) from
                             u/{loan_obj.borrower.username} and the loan is thus marked as unpaid. \n\n The mods will be notified automatically! (Loan ID `{loan_obj.loan_id}`: `Unpaid`){get_loan_url_disclaimer(loan_obj.loan_id)}'''}, status=status.HTTP_200_OK)
             elif author_obj.is_mod:
                 return Response({'message': f'''**Moderator Command** \n\n That's unfortunate! \n\n The moderator u/{author_obj.username} has confirmed that u/{loan_obj.lender.username} has not received a repayment for the `loan {loan_obj.loan_id})` from
                             u/{loan_obj.borrower.username} and the loan is thus marked as unpaid. \n\n (Loan ID `{loan_obj.loan_id}`: `Unpaid`){get_loan_url_disclaimer(loan_obj.loan_id)}'''}, status=status.HTTP_200_OK)
-        
+            else:
+                return Response({'message': f'''Loan `{loan_obj.loan_id}` has been marked as unpaid.{get_loan_url_disclaimer(loan_obj.loan_id)}'''}, status=status.HTTP_200_OK)
+
         except Loan.DoesNotExist:
             return Response({'message': f'''No active loan found! Please ensure that the `$loan` command was used and the comment has been responded
 to by the bot. \n\n Remember only the 'lender' of the loan can mark it as unpaid. \n\n If the loan was cancelled/refunded previously, 
