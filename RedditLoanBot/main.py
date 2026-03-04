@@ -414,7 +414,7 @@ def send_to_backend(url, data, comment):
 
 
 def send_mod_mail(subreddit, subject, message):
-    subreddit.message(subject=subject, message=message)
+    subreddit.modmail.create(subject=subject, body=message, recipient=subreddit)
 
 
 if __name__ == "__main__":
