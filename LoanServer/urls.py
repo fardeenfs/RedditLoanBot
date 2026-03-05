@@ -34,7 +34,8 @@ from loanmanager.api import (
 )
 from rest_framework_simplejwt import views as jwt_views
 
-from loanmanager.views import loan_list, reddit_user_detail, search_users, loan_detail
+from loanmanager.views import loan_list, reddit_user_detail, search_users, loan_detail, notifications_home, dismiss_notification, undismiss_notification
+from django.contrib.auth import views as auth_views
 
 
 
@@ -45,6 +46,11 @@ router.register('payments', PaymentViewSet)
 
 urlpatterns = [
     path('', loan_list, name='loan-list'),
+    path('mod-home/', notifications_home, name='home'),
+    path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='/login/'), name='logout'),
+    path('notifications/dismiss/<int:loan_id>/', dismiss_notification, name='dismiss-notification'),
+    path('notifications/undismiss/<int:loan_id>/', undismiss_notification, name='undismiss-notification'),
     path('loan/<int:loan_id>/', loan_detail, name='loan-detail'),
     path('user/', search_users, name='search_users'),
     path('user/<str:username>/', reddit_user_detail, name='reddit_user_detail'),

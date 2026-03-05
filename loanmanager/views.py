@@ -1,7 +1,47 @@
 from django.core.paginator import Paginator
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from .models import Loan, RedditUser
 from django.db import models
+
+@login_required
+def notifications_home(request):
+    pending_notifications = Loan.objects.filter(
+        is_unpaid=True,
+        is_cancelled=False,
+        notification_dismissed=False
+    ).select_related('lender', 'borrower').order_by('-creation_date')
+
+    dismissed_notifications = Loan.objects.filter(
+        is_unpaid=True,
+        is_cancelled=False,
+        notification_dismissed=True
+    ).select_related('lender', 'borrower').order_by('-creation_date')
+
+    return render(request, 'home.html', {
+        'pending_notifications': pending_notifications,
+        'dismissed_notifications': dismissed_notifications,
+    })
+
+
+@login_required
+@require_POST
+def dismiss_notification(request, loan_id):
+    loan = get_object_or_404(Loan, loan_id=loan_id, is_unpaid=True, is_cancelled=False)
+    loan.notification_dismissed = True
+    loan.save(update_fields=['notification_dismissed'])
+    return redirect('home')
+
+
+@login_required
+@require_POST
+def undismiss_notification(request, loan_id):
+    loan = get_object_or_404(Loan, loan_id=loan_id, is_unpaid=True, is_cancelled=False)
+    loan.notification_dismissed = False
+    loan.save(update_fields=['notification_dismissed'])
+    return redirect('home')
+
 
 def loan_list(request):
     username = request.GET.get('username', '')

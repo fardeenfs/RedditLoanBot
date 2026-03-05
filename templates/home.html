@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications - SimpleLoans</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            min-height: 100vh;
+        }
+
+        .navbar-custom {
+            background: #000;
+            border-bottom: 1px solid #333;
+            padding: 1rem 0;
+        }
+
+        .navbar-brand {
+            color: #fff !important;
+            font-weight: 600;
+            font-size: 1.25rem;
+        }
+
+        .nav-link {
+            color: #888 !important;
+            font-weight: 500;
+            transition: color 0.2s;
+            margin: 0 0.5rem;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: #fff !important;
+        }
+
+        .nav-user {
+            color: #555;
+            font-size: 0.875rem;
+            padding: 0.5rem 0.75rem;
+            margin: 0 0.25rem;
+        }
+
+        .btn-logout {
+            background: transparent;
+            color: #888 !important;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 0.4rem 0.9rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            line-height: 1.5;
+        }
+
+        .btn-logout:hover {
+            border-color: #666;
+            color: #fff !important;
+        }
+
+        .container {
+            max-width: 900px;
+            margin-top: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .page-header p {
+            color: #888;
+            font-size: 1rem;
+        }
+
+        /* Custom tabs */
+        .tab-bar {
+            display: flex;
+            gap: 0;
+            border-bottom: 1px solid #222;
+            margin-bottom: 2rem;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: #888;
+            font-size: 0.95rem;
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: -1px;
+        }
+
+        .tab-btn:hover {
+            color: #ccc;
+        }
+
+        .tab-btn.active {
+            color: #fff;
+            border-bottom-color: #fff;
+        }
+
+        .tab-badge {
+            display: inline-block;
+            background: rgba(245, 69, 92, 0.15);
+            color: #f5455c;
+            border: 1px solid rgba(245, 69, 92, 0.3);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.1rem 0.5rem;
+            margin-left: 0.4rem;
+            vertical-align: middle;
+        }
+
+        .tab-badge.dismissed {
+            background: rgba(136, 136, 136, 0.1);
+            color: #888;
+            border-color: rgba(136, 136, 136, 0.3);
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        /* Notification cards */
+        .notif-card {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .notif-card:hover {
+            border-color: #333;
+        }
+
+        .notif-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .loan-id {
+            color: #555;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-unpaid {
+            background: rgba(229, 62, 62, 0.1);
+            color: #f5455c;
+            border: 1px solid rgba(245, 69, 92, 0.3);
+        }
+
+        .status-dismissed {
+            background: rgba(136, 136, 136, 0.1);
+            color: #888;
+            border: 1px solid rgba(136, 136, 136, 0.3);
+        }
+
+        .loan-amount {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+        }
+
+        .loan-parties {
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .loan-parties a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .loan-parties a:hover {
+            text-decoration: underline;
+        }
+
+        .loan-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #222;
+            margin-bottom: 1rem;
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .meta-label {
+            color: #555;
+            font-size: 0.8rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .meta-value {
+            color: #fff;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .meta-value a {
+            color: #888;
+            text-decoration: none;
+            font-size: 0.85rem;
+        }
+
+        .meta-value a:hover {
+            color: #fff;
+        }
+
+        .notif-actions {
+            display: flex;
+            justify-content: flex-end;
+            padding-top: 0.75rem;
+            border-top: 1px solid #1a1a1a;
+        }
+
+        .btn-dismiss {
+            background: transparent;
+            border: 1px solid #333;
+            color: #888;
+            border-radius: 6px;
+            padding: 0.4rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-dismiss:hover {
+            border-color: #f5455c;
+            color: #f5455c;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #444;
+        }
+
+        .empty-state i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .empty-state p {
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-cash-coin"></i> SimpleLoans
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" style="border-color: #333;">
+                <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
+            </button>
+
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <ul class="navbar-nav align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/">Notifications</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Loans</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/user/">Users</a>
+                    </li>
+                    <li class="nav-item nav-user">
+                        <i class="bi bi-person-circle"></i> {{ request.user.username }}
+                    </li>
+                    <li class="nav-item">
+                        <form method="POST" action="/logout/" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-logout">Logout</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>Notifications</h1>
+            <p>Unpaid loans requiring attention</p>
+        </div>
+
+        <!-- Tab bar -->
+        <div class="tab-bar">
+            <button class="tab-btn active" onclick="switchTab('pending', this)">
+                Pending
+                {% if pending_notifications %}
+                <span class="tab-badge">{{ pending_notifications|length }}</span>
+                {% endif %}
+            </button>
+            <button class="tab-btn" onclick="switchTab('dismissed', this)">
+                Dismissed
+                {% if dismissed_notifications %}
+                <span class="tab-badge dismissed">{{ dismissed_notifications|length }}</span>
+                {% endif %}
+            </button>
+        </div>
+
+        <!-- Pending tab -->
+        <div id="tab-pending" class="tab-pane active">
+            {% if pending_notifications %}
+                {% for loan in pending_notifications %}
+                <div class="notif-card">
+                    <div class="notif-card-header">
+                        <span class="loan-id">Loan #{{ loan.loan_id }}</span>
+                        <span class="status-badge status-unpaid"><i class="bi bi-exclamation-circle"></i> Unpaid</span>
+                    </div>
+
+                    <div class="loan-amount">{{ loan.amount }} {{ loan.currency }}</div>
+
+                    <div class="loan-parties">
+                        <a href="/user/{{ loan.lender.username }}/">{{ loan.lender.username }}</a>
+                        <span> lent to </span>
+                        <a href="/user/{{ loan.borrower.username }}/">{{ loan.borrower.username }}</a>
+                    </div>
+
+                    <div class="loan-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">Amount (USD)</span>
+                            <span class="meta-value">${{ loan.amount_in_usd }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Date</span>
+                            <span class="meta-value">{{ loan.creation_date|date:"M d, Y" }}</span>
+                        </div>
+                        {% if loan.original_thread %}
+                        <div class="meta-item">
+                            <span class="meta-label">Thread</span>
+                            <span class="meta-value"><a href="{{ loan.original_thread }}" target="_blank"><i class="bi bi-box-arrow-up-right"></i> View thread</a></span>
+                        </div>
+                        {% endif %}
+                        <div class="meta-item">
+                            <span class="meta-label">Loan Detail</span>
+                            <span class="meta-value"><a href="/loan/{{ loan.loan_id }}/">View loan</a></span>
+                        </div>
+                    </div>
+
+                    <div class="notif-actions">
+                        <form method="POST" action="{% url 'dismiss-notification' loan.loan_id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-dismiss">
+                                <i class="bi bi-x"></i> Dismiss
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-bell-slash"></i>
+                    <p>No pending notifications</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Dismissed tab -->
+        <div id="tab-dismissed" class="tab-pane">
+            {% if dismissed_notifications %}
+                {% for loan in dismissed_notifications %}
+                <div class="notif-card">
+                    <div class="notif-card-header">
+                        <span class="loan-id">Loan #{{ loan.loan_id }}</span>
+                        <span class="status-badge status-dismissed"><i class="bi bi-check"></i> Dismissed</span>
+                    </div>
+
+                    <div class="loan-amount">{{ loan.amount }} {{ loan.currency }}</div>
+
+                    <div class="loan-parties">
+                        <a href="/user/{{ loan.lender.username }}/">{{ loan.lender.username }}</a>
+                        <span> lent to </span>
+                        <a href="/user/{{ loan.borrower.username }}/">{{ loan.borrower.username }}</a>
+                    </div>
+
+                    <div class="loan-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">Amount (USD)</span>
+                            <span class="meta-value">${{ loan.amount_in_usd }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Date</span>
+                            <span class="meta-value">{{ loan.creation_date|date:"M d, Y" }}</span>
+                        </div>
+                        {% if loan.original_thread %}
+                        <div class="meta-item">
+                            <span class="meta-label">Thread</span>
+                            <span class="meta-value"><a href="{{ loan.original_thread }}" target="_blank"><i class="bi bi-box-arrow-up-right"></i> View thread</a></span>
+                        </div>
+                        {% endif %}
+                        <div class="meta-item">
+                            <span class="meta-label">Loan Detail</span>
+                            <span class="meta-value"><a href="/loan/{{ loan.loan_id }}/">View loan</a></span>
+                        </div>
+                    </div>
+
+                    <div class="notif-actions">
+                        <form method="POST" action="{% url 'undismiss-notification' loan.loan_id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-dismiss">
+                                <i class="bi bi-arrow-counterclockwise"></i> Undismiss
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-check-circle"></i>
+                    <p>No dismissed notifications</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function switchTab(name, btn) {
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + name).classList.add('active');
+            btn.classList.add('active');
+        }
+    </script>
+</body>
+</html>

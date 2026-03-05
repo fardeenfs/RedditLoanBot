@@ -48,6 +48,7 @@ class Loan(models.Model):
     is_paid = models.BooleanField(default=False)
     is_unpaid = models.BooleanField(default=False)
     is_cancelled = models.BooleanField(default=False)
+    notification_dismissed = models.BooleanField(default=False)
     original_thread = models.URLField(max_length=1000, blank=True, null=True)
     thread_id = models.CharField(max_length=1000, blank=True, null=True)
     comment_id = models.CharField(max_length=1000, blank=True, null=True)
