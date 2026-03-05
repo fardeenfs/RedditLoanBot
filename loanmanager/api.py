@@ -1,6 +1,9 @@
 import copy
 import decimal
+import logging
 import math
+
+logger = logging.getLogger(__name__)
 from rest_framework import viewsets
 from rest_framework.views import APIView
 
@@ -346,16 +349,21 @@ class UnpaidLoanByThreadView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
+        logger.warning(f"[UNPAID_BY_THREAD] Request received: {request.data}")
         # Check if comment has been replied to
         if check_if_comment_has_been_replied_to(self.request.data['comment_id']):
+            logger.warning(f"[UNPAID_BY_THREAD] Comment {self.request.data['comment_id']} already replied to")
             return Response({'message': f'''This comment has already been replied to!'''}, status=status.HTTP_400_BAD_REQUEST)
         else:
             CommentsRepliedTo.objects.create(comment_reddit_id=self.request.data['comment_id'])
 
         try:
             author = self.request.data['author']
+            thread_id = self.request.data['thread_id']
+            logger.warning(f"[UNPAID_BY_THREAD] Looking for loan: thread_id={thread_id}, lender={author}")
 
-            loan_obj = Loan.objects.filter(thread_id=self.request.data['thread_id'], lender__username=author, is_paid=False, is_cancelled=False)
+            loan_obj = Loan.objects.filter(thread_id=thread_id, lender__username=author, is_paid=False, is_cancelled=False)
+            logger.warning(f"[UNPAID_BY_THREAD] Loans found: {loan_obj.count()}")
             if loan_obj.count() > 1:
                 return Response({'message': f'''Multiple loans found on this thread! Please use `$unpaid_with_id` command instead.'''}, status=status.HTTP_200_OK)
             elif loan_obj.count() == 0:
@@ -392,21 +400,27 @@ class UnpaidLoanWithIDView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
+        logger.warning(f"[UNPAID_WITH_ID] Request received: {request.data}")
         # Check if comment has been replied to
         if check_if_comment_has_been_replied_to(self.request.data['comment_id']):
+            logger.warning(f"[UNPAID_WITH_ID] Comment {self.request.data['comment_id']} already replied to")
             return Response({'message': f'''This comment has already been replied to!'''}, status=status.HTTP_400_BAD_REQUEST)
         else:
             CommentsRepliedTo.objects.create(comment_reddit_id=self.request.data['comment_id'])
 
         try:
-            print(self.request.data)
-            loan_obj = Loan.objects.get(loan_id=self.request.data['loan_id'], is_cancelled=False)
+            loan_id = self.request.data['loan_id']
             author = self.request.data['author']
+            logger.warning(f"[UNPAID_WITH_ID] Looking for loan_id={loan_id}, author={author}")
+            loan_obj = Loan.objects.get(loan_id=loan_id, is_cancelled=False)
             author_obj, _ = RedditUser.objects.get_or_create(username=author)
+            logger.warning(f"[UNPAID_WITH_ID] Loan found: {loan_obj}, lender={loan_obj.lender.username}, author_is_mod={author_obj.is_mod}")
             if loan_obj.lender.username != author_obj.username and not author_obj.is_mod:
-                return Response({'message': f'''You are not the lender of this loan. You cannot mark this loan as unpaid. If this is an error, please contact 
-                                a moderator.\n\n The lender of the loan is currently u/{loan_obj.lender.username}'''}, status=status.HTTP_200_OK)   
+                logger.warning(f"[UNPAID_WITH_ID] Rejected: {author} is not lender and not mod")
+                return Response({'message': f'''You are not the lender of this loan. You cannot mark this loan as unpaid. If this is an error, please contact
+                                a moderator.\n\n The lender of the loan is currently u/{loan_obj.lender.username}'''}, status=status.HTTP_200_OK)
             if loan_obj.is_unpaid:
+                logger.warning(f"[UNPAID_WITH_ID] Loan {loan_id} already unpaid")
                 return Response({'message': f'''This loan has already been marked as unpaid!'''}, status=status.HTTP_400_BAD_REQUEST)
             loan_obj.is_unpaid = True
             loan_obj.save()
@@ -424,6 +438,7 @@ class UnpaidLoanWithIDView(APIView):
             lender_obj.lender_unpaid_loan_count += 1
             lender_obj.save()
 
+            logger.warning(f"[UNPAID_WITH_ID] Loan {loan_obj.loan_id} successfully marked unpaid. Returning 200.")
             if loan_obj.lender.username == author_obj.username:
                 return Response({'message': f'''That's unfortunate! \n\n u/{loan_obj.lender.username} has confirmed that they have not received a repayment for the [loan](https://simpleloans.live/loan/{loan_obj.loan_id}/) from
                             u/{loan_obj.borrower.username} and the loan is thus marked as unpaid. \n\n The mods will be notified automatically! (Loan ID `{loan_obj.loan_id}`: `Unpaid`){get_loan_url_disclaimer(loan_obj.loan_id)}'''}, status=status.HTTP_200_OK)
@@ -434,8 +449,9 @@ class UnpaidLoanWithIDView(APIView):
                 return Response({'message': f'''Loan `{loan_obj.loan_id}` has been marked as unpaid.{get_loan_url_disclaimer(loan_obj.loan_id)}'''}, status=status.HTTP_200_OK)
 
         except Loan.DoesNotExist:
+            logger.warning(f"[UNPAID_WITH_ID] Loan not found for loan_id={self.request.data.get('loan_id')}")
             return Response({'message': f'''No active loan found! Please ensure that the `$loan` command was used and the comment has been responded
-to by the bot. \n\n Remember only the 'lender' of the loan can mark it as unpaid. \n\n If the loan was cancelled/refunded previously, 
+to by the bot. \n\n Remember only the 'lender' of the loan can mark it as unpaid. \n\n If the loan was cancelled/refunded previously,
 request the lender to use the `$loan` command again'''}, status=status.HTTP_200_OK)
 
 

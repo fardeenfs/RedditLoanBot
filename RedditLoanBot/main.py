@@ -270,9 +270,13 @@ def unpaid_loan_with_id(comment, subreddit):
         'comment_id': comment.id,
     }
 
+    print(f"[UNPAID_WITH_ID] Sending to backend: {data}")
     response = send_to_backend(f"{os.getenv('BACKEND_URL')}/api/unpaid-loan-with-id/", data, comment)
+    print(f"[UNPAID_WITH_ID] Backend response code: {response}")
     if response != 400:
         send_mod_mail(subreddit,'Unpaid Loan Alert', f"u/{comment.author} has reported an unpaid loan on this thread: {comment.submission.url}. \n\n This is the link to the comment: {comment.permalink}")
+    else:
+        print(f"[UNPAID_WITH_ID] Skipping mod mail due to 400 response")
 
 
 
@@ -285,9 +289,13 @@ def unpaid_loan_by_thread(comment, subreddit):
         'comment_id': comment.id,
     }
 
+    print(f"[UNPAID_BY_THREAD] Sending to backend: {data}")
     response = send_to_backend(f"{os.getenv('BACKEND_URL')}/api/unpaid-loan-by-thread/", data, comment)
+    print(f"[UNPAID_BY_THREAD] Backend response code: {response}")
     if response != 400:
         send_mod_mail(subreddit,'Unpaid Loan Alert', f"u/{comment.author} has reported an unpaid loan on this thread: {comment.submission.url}. \n\n This is the link to the comment: {comment.permalink}")
+    else:
+        print(f"[UNPAID_BY_THREAD] Skipping mod mail due to 400 response")
 
 
 def check_user(comment):
@@ -414,7 +422,13 @@ def send_to_backend(url, data, comment):
 
 
 def send_mod_mail(subreddit, subject, message):
-    subreddit.modmail.create(subject=subject, body=message, recipient=subreddit)
+    print(f"[MODMAIL] Attempting to send mod mail: subject='{subject}'")
+    print(f"[MODMAIL] Message body: {message}")
+    try:
+        result = subreddit.modmail.create(subject=subject, body=message, recipient=subreddit)
+        print(f"[MODMAIL] Successfully sent mod mail. Result: {result}")
+    except Exception as e:
+        print(f"[MODMAIL] ERROR sending mod mail: {type(e).__name__}: {e}")
 
 
 if __name__ == "__main__":
