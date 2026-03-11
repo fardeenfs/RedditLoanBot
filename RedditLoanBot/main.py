@@ -107,7 +107,7 @@ def request_loan(comment):
                 currency = str(comment_body[2]) if len(comment_body) >= 3 else 'USD'
     else:
         data = {
-                comment.id: comment.body,
+                'comment_id': comment.id,
             }
         response = send_to_backend(f"{os.getenv('BACKEND_URL')}/api/track-comment/", data, comment)
         
@@ -120,7 +120,7 @@ def request_loan(comment):
     
     if len(red_amount) - len(amount) > 1 or not red_amount:
         data = {
-                comment.id: comment.body,
+                'comment_id': comment.id,
             }
         response = send_to_backend(f"{os.getenv('BACKEND_URL')}/api/track-comment/", data, comment)
         
@@ -199,7 +199,7 @@ def paid_loan_with_id(comment):
     
     if len(red_amount) - len(amount) > 1:
         data = {
-                comment.id: comment.body,
+                'comment_id': comment.id,
             }
         response = send_to_backend(f"{os.getenv('BACKEND_URL')}/api/track-comment/", data, comment)
         
@@ -236,7 +236,7 @@ def paid_loan_by_thread(comment):
     
     if len(red_amount) - len(amount) > 1:
         data = {
-                comment.id: comment.body,
+                'comment_id': comment.id,
             }
         response = send_to_backend(f"{os.getenv('BACKEND_URL')}/api/track-comment/", data, comment)
         
@@ -274,7 +274,8 @@ def unpaid_loan_with_id(comment, subreddit):
     response = send_to_backend(f"{os.getenv('BACKEND_URL')}/api/unpaid-loan-with-id/", data, comment)
     print(f"[UNPAID_WITH_ID] Backend response code: {response}")
     if response != 400:
-        send_mod_mail(subreddit,'Unpaid Loan Alert', f"u/{comment.author} has reported an unpaid loan on this thread: {comment.submission.url}. \n\n This is the link to the comment: {comment.permalink}")
+        thread_url = f"https://www.reddit.com/r/{comment.subreddit.display_name}/comments/{comment.submission.id}/"
+        send_mod_mail(subreddit,'Unpaid Loan Alert', f"u/{comment.author} has reported an unpaid loan on this thread: {thread_url}. \n\n This is the link to the comment: https://www.reddit.com{comment.permalink}")
     else:
         print(f"[UNPAID_WITH_ID] Skipping mod mail due to 400 response")
 
@@ -293,7 +294,8 @@ def unpaid_loan_by_thread(comment, subreddit):
     response = send_to_backend(f"{os.getenv('BACKEND_URL')}/api/unpaid-loan-by-thread/", data, comment)
     print(f"[UNPAID_BY_THREAD] Backend response code: {response}")
     if response != 400:
-        send_mod_mail(subreddit,'Unpaid Loan Alert', f"u/{comment.author} has reported an unpaid loan on this thread: {comment.submission.url}. \n\n This is the link to the comment: {comment.permalink}")
+        thread_url = f"https://www.reddit.com/r/{comment.subreddit.display_name}/comments/{comment.submission.id}/"
+        send_mod_mail(subreddit,'Unpaid Loan Alert', f"u/{comment.author} has reported an unpaid loan on this thread: {thread_url}. \n\n This is the link to the comment: https://www.reddit.com{comment.permalink}")
     else:
         print(f"[UNPAID_BY_THREAD] Skipping mod mail due to 400 response")
 
@@ -428,7 +430,12 @@ def send_mod_mail(subreddit, subject, message):
         result = subreddit.modmail.create(subject=subject, body=message, recipient=subreddit)
         print(f"[MODMAIL] Successfully sent mod mail. Result: {result}")
     except Exception as e:
-        print(f"[MODMAIL] ERROR sending mod mail: {type(e).__name__}: {e}")
+        print(f"[MODMAIL] modmail.create failed ({type(e).__name__}: {e}), falling back to subreddit.message()")
+        try:
+            subreddit.message(subject=subject, message=message)
+            print(f"[MODMAIL] Successfully sent mod mail via subreddit.message()")
+        except Exception as e2:
+            print(f"[MODMAIL] ERROR - both methods failed. subreddit.message() error: {type(e2).__name__}: {e2}")
 
 
 if __name__ == "__main__":
