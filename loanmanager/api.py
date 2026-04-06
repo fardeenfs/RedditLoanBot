@@ -570,10 +570,6 @@ The user has a total of `{user_obj.lender_unpaid_loan_count}` unpaid loan(s), fo
 \n\n
 Here are the details of the last 5 loans for the user: \n\n
 {markdown_table}
-
----
-
-*View the most updated version of u/{user_obj.username}'s loans at: https://simpleloans.live/user/{user_obj.username}/*
 '''}, status=status.HTTP_200_OK)
         
         except RedditUser.DoesNotExist:
